@@ -90,8 +90,8 @@ const Footer = ({ children }) => {
         {children && <OptionalContent>{children}</OptionalContent>}
         <Content>
           <Important>
-            <a href="https://www.patreon.com/lekoarts" target="_blank" rel="noopener noreferrer">
-              Patreon
+            <a href="https://www.google.com/" target="_blank" rel="noopener noreferrer">
+              Google
             </a>
           </Important>
           <Item>
