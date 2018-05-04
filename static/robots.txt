@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /data-protection
+
+sitemap: https://www.lekoarts.de/sitemap.xml
