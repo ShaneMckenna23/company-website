@@ -87,7 +87,7 @@ const PricingPlan = styled.div`
 const Pricing = () => (
   <Wrapper>
     <PricingPlan className="pricing-plan">
-      <img src="https://s22.postimg.cc/8mv5gn7w1/paper-plane.png" alt="" />
+      <img src="/price1.jpg" alt="" />
       <h2>Personal</h2>
       <ul>
         <li>Custom domains</li>
@@ -99,7 +99,7 @@ const Pricing = () => (
       </Link>
     </PricingPlan>
     <PricingPlan className="pricing-plan">
-      <img src="https://s28.postimg.cc/ju5bnc3x9/plane.png" alt="" />
+      <img src="/price2.jpg" alt="" />
       <h2>Personal</h2>
       <ul>
         <li>Custom domains</li>
@@ -111,7 +111,7 @@ const Pricing = () => (
       </Link>
     </PricingPlan>
     <PricingPlan className="pricing-plan">
-      <img src="https://s21.postimg.cc/tpm0cge4n/space-ship.png" alt="" />
+      <img src="/price3.jpg"  alt="" />
       <h2>Personal</h2>
       <ul>
         <li>Custom domains</li>
