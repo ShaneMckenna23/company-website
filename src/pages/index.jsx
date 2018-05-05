@@ -69,7 +69,6 @@ const Index = ({
         </Link>
       </Text>
     </Container>
-    <About />
     <Container type="big">
       <WhatWeDo />
     </Container>
