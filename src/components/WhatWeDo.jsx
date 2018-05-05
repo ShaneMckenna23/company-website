@@ -14,6 +14,14 @@ const Text = styled.span`
   font-weight: 900;
   text-transform: uppercase;
   line-height: 1;
+
+  @media (max-width: ${props => props.theme.breakpoints.m}) {
+    font-size: 55px;
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.s}) {
+    font-size: 32px;
+  }
 `;
 
 const blue = 'linear-gradient(30deg, #009cf3, #16d6d9);';
