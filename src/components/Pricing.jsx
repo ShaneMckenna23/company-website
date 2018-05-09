@@ -100,7 +100,7 @@ const Pricing = () => (
     </PricingPlan>
     <PricingPlan className="pricing-plan">
       <img src="/price2.jpg" alt="" />
-      <h2>Personal</h2>
+      <h2>Business</h2>
       <ul>
         <li>Custom domains</li>
         <li>Sleeps after 30 mins of inactivity</li>
@@ -112,7 +112,7 @@ const Pricing = () => (
     </PricingPlan>
     <PricingPlan className="pricing-plan">
       <img src="/price3.jpg"  alt="" />
-      <h2>Personal</h2>
+      <h2>Multi-Page</h2>
       <ul>
         <li>Custom domains</li>
         <li>Sleeps after 30 mins of inactivity</li>

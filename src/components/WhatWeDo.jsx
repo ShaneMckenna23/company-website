@@ -52,7 +52,7 @@ const Wrapper = styled.section`
     content: '';
     transform: skewY(17deg);
     z-index: 1;
-    background-color: #3455ff;
+    background: ${props => props.theme.gradient.rightToLeft};
   }
   .section-head-s4 {
     padding-bottom: 50px;

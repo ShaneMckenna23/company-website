@@ -4,7 +4,6 @@ import styled from 'react-emotion';
 import Button from '../components/Button';
 
 const Wrapper = styled.section`
-  margin: 5em 0em;
   .container {
     position: relative;
     z-index: 5;
