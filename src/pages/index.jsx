@@ -10,8 +10,9 @@ import FeaturedProject from '../components/FeaturedProject';
 import Header from '../components/Header';
 import Button from '../components/Button';
 import Pricing from '../components/Pricing';
-import WhatWeDo from '../components/WhatWeDo';
+import Impact from '../components/Impact';
 import About from '../components/About';
+import WhatWeDo from '../components/WhatWeDo';
 
 const ProjectsWrapper = styled.div`
   display: flex;
@@ -47,6 +48,7 @@ const Index = ({
   <React.Fragment>
     <Header big title={<React.Fragment>AWARD WINNING WEBSITE DEVELOPMENT</React.Fragment>} />
     <About />
+    <WhatWeDo />
     <Container type="big">
       <h1>Recent Projects</h1>
       <ProjectsWrapper>
@@ -70,7 +72,7 @@ const Index = ({
       </Text>
     </Container>
     <Container type="big">
-      <WhatWeDo />
+      <Impact />
     </Container>
     <Container type="big">
       <h1>Pricing</h1>

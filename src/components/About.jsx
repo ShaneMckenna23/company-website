@@ -430,6 +430,27 @@ const Wrapper = styled.section`
       border-radius: 30px 30px 30px 100px;
     }
   }
+
+  .col-sm-3,
+  .col-sm-9 {
+    position: relative;
+    width: 100%;
+    min-height: 1px;
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+  @media (min-width: 576px) {
+    .col-sm-3 {
+      -ms-flex: 0 0 25%;
+      flex: 0 0 25%;
+      max-width: 25%;
+    }
+    .col-sm-9 {
+      -ms-flex: 0 0 75%;
+      flex: 0 0 75%;
+      max-width: 75%;
+    }
+  }
 `;
 
 const About = () => (
@@ -439,9 +460,9 @@ const About = () => (
         <div className="col-lg-7">
           <div className="about-section-innr section-bg-lavendar">
             <div className="about-shade" />
-            <h6>About ICOX Coin</h6>
+            <h6>About Company Name</h6>
             <h3>
-              ICOX <span>is a decentralized currency that trades and invest with powerful</span> blockchain
+              Company Name <span>is a decentralized currency that trades and invest with powerful</span> blockchain
               applications.
             </h3>
             <p>ICO Crypto is a platform for future of funding that powering the new blockchain. </p>
@@ -450,24 +471,11 @@ const About = () => (
               doloremque laudant aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae
               dicta sunt explicabo.
             </p>
-            <p>
-              After seriously considering eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim
-              veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-            </p>
-            <div>
-              <p>
-                Pre-ICO ICOX Coin has already secured over 30 partnerships worldwide, with more partnerships being
-                finalized each day.
-              </p>
-            </div>
           </div>
         </div>
         <div className="col-lg-5">
           <div className="about-image">
-            <img
-              src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/GraphQL_Logo.svg/225px-GraphQL_Logo.svg.png"
-              alt="graph"
-            />
+            <img src="/home-about.svg" alt="graph" />
           </div>
         </div>
       </div>
