@@ -78,7 +78,7 @@ const Index = ({
       <Impact />
     </Container>
     <Container type="big">
-      <h1>Pricing</h1>
+      <h1>Packages</h1>
       <Pricing />
     </Container>
     <Footer />

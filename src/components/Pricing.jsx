@@ -67,9 +67,10 @@ const PricingPlan = styled.div`
 
   li {
     border-top: 1px solid #e1f1ff;
-    font-size: 12px;
+    font-size: 15px;
     line-height: 1.5;
     padding: 15px 0;
+    margin-bottom: 0;
   }
 
   li:last-child {
@@ -90,10 +91,10 @@ const Pricing = () => (
       <img src="/price1.jpg" alt="" />
       <h2>Personal</h2>
       <ul>
-        <li>Custom domains</li>
-        <li>Sleeps after 30 mins of inactivity</li>
+        <li>One-Page</li>
+        <li>Custom Domain</li>
+        <li>6 months Hosting</li>
       </ul>
-      <span className="pricing-price">Free</span>
       <Link to="/get-started-1">
         <Button type="secondary">Get Started</Button>
       </Link>
@@ -102,22 +103,22 @@ const Pricing = () => (
       <img src="/price2.jpg" alt="" />
       <h2>Business</h2>
       <ul>
-        <li>Custom domains</li>
-        <li>Sleeps after 30 mins of inactivity</li>
+        <li>Multi-Page</li>
+        <li>Custom Domnain</li>
+        <li>1 year hosting</li>
       </ul>
-      <span className="pricing-price">Free</span>
       <Link to="/get-started-2" test="true">
         <Button type="secondary">Get Started</Button>
       </Link>
     </PricingPlan>
     <PricingPlan className="pricing-plan">
       <img src="/price3.jpg" alt="" />
-      <h2>Multi-Page</h2>
+      <h2>Business+</h2>
       <ul>
-        <li>Custom domains</li>
-        <li>Sleeps after 30 mins of inactivity</li>
+        <li>Content Management</li>
+        <li>Custom Domains</li>
+        <li>1 year hosting</li>
       </ul>
-      <span className="pricing-price">Free</span>
       <Link to="/get-started-3">
         <Button type="secondary">Get Started</Button>
       </Link>
