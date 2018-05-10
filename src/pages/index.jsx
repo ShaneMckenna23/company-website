@@ -48,7 +48,7 @@ const Index = ({
 }) => (
   <React.Fragment>
     <Header big title={<React.Fragment>AWARD WINNING WEBSITE DEVELOPMENT</React.Fragment>}>
-        <Typist>Animate this text.</Typist>
+      <Typist>Animate this text.</Typist>
     </Header>
     <About />
     <WhatWeDo />

@@ -94,7 +94,7 @@ const Pricing = () => (
         <li>Sleeps after 30 mins of inactivity</li>
       </ul>
       <span className="pricing-price">Free</span>
-      <Link to="/projects">
+      <Link to="/get-started-1">
         <Button type="secondary">Get Started</Button>
       </Link>
     </PricingPlan>
@@ -106,19 +106,19 @@ const Pricing = () => (
         <li>Sleeps after 30 mins of inactivity</li>
       </ul>
       <span className="pricing-price">Free</span>
-      <Link to="/projects">
+      <Link to="/get-started-2" test="true">
         <Button type="secondary">Get Started</Button>
       </Link>
     </PricingPlan>
     <PricingPlan className="pricing-plan">
-      <img src="/price3.jpg"  alt="" />
+      <img src="/price3.jpg" alt="" />
       <h2>Multi-Page</h2>
       <ul>
         <li>Custom domains</li>
         <li>Sleeps after 30 mins of inactivity</li>
       </ul>
       <span className="pricing-price">Free</span>
-      <Link to="/projects">
+      <Link to="/get-started-3">
         <Button type="secondary">Get Started</Button>
       </Link>
     </PricingPlan>

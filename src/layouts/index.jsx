@@ -16,7 +16,6 @@ injectGlobal`
   }
   html {
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
     box-sizing: border-box;
     -ms-overflow-style: scrollbar;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
@@ -54,6 +53,10 @@ injectGlobal`
   body {
     color: ${theme.colors.black.base};
     background-color: ${theme.colors.white.light};
+  }
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
   }
   ::selection {
     color: ${theme.colors.white.base};
