@@ -1,34 +1,26 @@
-const aws = require('aws-sdk');
-
-const ses = new aws.SES({
-  region: 'us-west-2',
-});
+const nodemailer = require('nodemailer');
 
 exports.handler = function(event, context) {
-  console.log('Incoming: ', event);
-  // var output = querystring.parse(event);
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'shanemckennadev@gmail.com',
+      pass: process.env.emailPassword,
+    },
+  });
 
-  const eParams = {
-    Destination: {
-      ToAddresses: ['shanemckenna23@hotmail.co.uk'],
-    },
-    Message: {
-      Body: {
-        Text: {
-          Data: 'Hey! What is up?',
-        },
-      },
-      Subject: {
-        Data: 'Email Subject!!!',
-      },
-    },
-    Source: 'test@test.com',
+  const mailOptions = {
+    from: 'shanemckennadev@gmail.com',
+    to: 'nuclarpenguin@gmail.com',
+    subject: 'Sending Email using Node.js',
+    text: 'That was easy!',
   };
 
-  var email = ses.sendEmail(eParams, (err, data) => {
-    if (err) console.log(err);
-    else {
-      context.succeed(event);
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log(`Email sent: ${info.response}`);
     }
   });
 };
