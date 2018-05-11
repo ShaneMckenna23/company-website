@@ -64,35 +64,16 @@ const Wrapper = styled.section`
 
 const QuoteForm = () => (
   <Wrapper>
-    <form name="quote" method="POST" netlify>
-      <div className="form-group">
-        <label>First Name</label>
-        <input value="Rick" className="input-control" />
-
-        <label className="right-inline">Last Name</label>
-        <input value="Strahl" className="input-control" />
-      </div>
-
-      <div className="form-group">
-        <label>Company</label>
-        <input value="West Wind" className="input-control" />
-      </div>
-
-      <div className="form-group">
-        <label>Address</label>
-        <textarea className="input-control">32 North End</textarea>
-      </div>
-
-      <div className="form-group">
-        <label>City,State,Zip</label>
-        <input value="Walnut Creek" className="input-control" placeholder="City" style={{ flex: '6' }} />
-        <input value="CA" className="input-control" placeholder="State" style={{ flex: '1' }} />
-        <input value="94152" className="input-control" placeholder="Postal Code" style={{ flex: '2' }} />
-      </div>
-
-      <div className="form-group">
-        <button type="submit">Submit</button>
-      </div>
+    <form name="contact" netlify>
+      <p>
+        <label>Name <input type="text" name="name" /></label>
+      </p>
+      <p>
+        <label>Email <input type="email" name="email" /></label>
+      </p>
+      <p>
+        <button type="submit">Send</button>
+      </p>
     </form>
   </Wrapper>
 );
