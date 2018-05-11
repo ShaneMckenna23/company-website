@@ -68,7 +68,7 @@ const QuoteForm = () => (
       <input name="name" placeholder="Your Name" type="text" />
       <input name="email" placeholder="name@name.com" type="email" />
       <textarea name="message" />
-      <button>Send</button>
+      <button type="submit">Send</button>
     </form>
   </Wrapper>
 );
