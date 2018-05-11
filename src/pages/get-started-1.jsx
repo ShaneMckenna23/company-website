@@ -4,6 +4,7 @@ import Footer from '../components/Footer';
 import Container from '../components/Container';
 import Header from '../components/Header';
 import config from '../../config/website';
+import QuoteForm from '../components/QuoteForm';
 
 const DataProtection = props => (
   <React.Fragment>
@@ -11,7 +12,8 @@ const DataProtection = props => (
     <Header title="Get Started" />
     <div style={{ marginTop: '3rem' }}>
       <Container type="article">
-        <h2>Get Started {console.log(props)}</h2>
+        <h2>Get Started</h2>
+        <QuoteForm />
       </Container>
     </div>
     <Footer />

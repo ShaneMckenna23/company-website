@@ -1,6 +1,6 @@
 import React from 'react';
-import Link from 'gatsby-link';
 import styled from 'react-emotion';
+import FA from 'react-fontawesome';
 
 const Wrapper = styled.section`
   color: white;
@@ -63,6 +63,9 @@ const Wrapper = styled.section`
     }
   }
   .text-box {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
     padding-right: 30px;
     border-radius: 6px;
   }
@@ -157,51 +160,33 @@ const WhatWeDo = () => (
         <div className="row">
           <div className="col-lg-6">
             <div className="section-head-s4">
-              <h2 className="section-title">Problem &amp; Solution</h2>
-              <p>
-                We are creating tokens to solve the world’s biggest blockchain issues surrounding cross-border payments,
-                data accessibility and payment.
-              </p>
+              <h2 className="section-title">What We Do</h2>
+              <p>Our mission is to take your idea and make it a reality.</p>
             </div>
           </div>
         </div>
         <div className="row">
           <div className="col-lg-4 res-m-bttm">
             <div className="text-box">
-              <h4>Problems with Information Sharing</h4>
-              <p>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                ex ea commodo consequat.
-              </p>
+              <FA name="paint-brush" size="5x" style={{ marginBottom: '20px' }} />
+              <h4>Design</h4>
+              <p>Ensure customer satisfaction</p>
+              <br />
+              <br />
             </div>
           </div>
           <div className="col-lg-4 res-m-bttm">
             <div className="text-box">
-              <h4>Relation between provider and end-user</h4>
-              <p>
-                Sed ut perspiciatis unde omnis iste natus error sed do eiusmod tempor incididunt ut labore et dolore
-                magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-                commodo consequat.
-              </p>
-              <p>
-                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est
-                laborum.
-              </p>
+              <FA name="code" size="5x" style={{ marginBottom: '20px' }} />
+              <h4>Development</h4>
+              <p>SEO, Fast load times</p>
             </div>
           </div>
-          <div className="col-lg-4">
-            <div className="text-box text-box-bg">
-              <h6>Our Solution</h6>
-              <h4>That All Change with ICO Crypto</h4>
-              <p>
-                Sed ut perspiciatis unde omnis iste natus error sed do eiusmod tempor incididunt ut labore et dolore
-                magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-                commodo consequat.{' '}
-              </p>
-              <p>
-                Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-              </p>
+          <div className="col-lg-4 ">
+            <div className="text-box">
+              <FA name="server" size="5x" style={{ marginBottom: '20px' }} />
+              <h4>Hosting</h4>
+              <p>Https, Global CDN</p>
             </div>
           </div>
         </div>

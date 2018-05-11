@@ -9,6 +9,7 @@ import 'typeface-istok-web';
 import SEO from '../components/SEO';
 import Navigation from '../components/Navigation';
 import theme from '../../config/theme';
+import Helmet from 'react-helmet';
 
 injectGlobal`
   *, *:before, *:after {
@@ -264,6 +265,20 @@ injectGlobal`
 const MainLayout = ({ children }) => (
   <ThemeProvider theme={theme}>
     <React.Fragment>
+      <Helmet>
+        <link
+          rel="stylesheet"
+          href="https://use.fontawesome.com/releases/v5.0.13/css/all.css"
+          integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossOrigin="anonymous"
+        />
+      </Helmet>
       <SEO />
       <Navigation />
       {children()}
