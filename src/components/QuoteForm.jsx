@@ -116,10 +116,11 @@ class QuoteForm extends React.Component {
   };
 
   successMessage = () => {
-    console.log(this.state);
     document.getElementById('contactForm').reset();
+    const lower = props.budgetMax / 2;
+    const higher = props.budgetMax / 2 + props.budgetMin;
     this.setState({
-      budget: [this.props.budgetMin, this.props.budgetMax],
+      budget: [lower, higher],
     });
   };
 
@@ -143,11 +144,11 @@ class QuoteForm extends React.Component {
           <div className="flex-container-row">
             <div className="form-item margin">
               <label htmlFor="name">Full Name:</label>
-              <input id="name" type="text" name="name" onChange={this.handleChange} />
+              <input id="name" type="text" name="name" onChange={this.handleChange} required/>
             </div>
             <div className="form-item">
               <label htmlFor="email">Email:</label>
-              <input id="email" type="email" name="email" onChange={this.handleChange} />
+              <input id="email" type="email" name="email" onChange={this.handleChange} required/>
             </div>
           </div>
 
@@ -173,6 +174,7 @@ class QuoteForm extends React.Component {
               rows="5"
               placeholder="Tell us about your project"
               onChange={this.handleChange}
+              required
             />
           </div>
 
