@@ -43,6 +43,37 @@ const Wrapper = styled.section`
 
   textarea {
     width: 100%;
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    outline: none;
+    border: none;
+    border-bottom: 2px solid #b3b3b3;
+    background: transparent;
+    resize: none;
+  }
+
+  textarea:focus {
+    border-bottom: 2px solid #abe2fb;
+  }
+
+  input {
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    outline: none;
+    border: none;
+    border-bottom: 2px solid #b3b3b3;
+    background: transparent;
+  }
+
+  input:focus {
+    border-bottom: 2px solid #abe2fb;
+  }
+
+  .rc-slider-rail {
+    background-color: #b3b3b3;
+    height: 2px;
   }
 `;
 

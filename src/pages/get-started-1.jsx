@@ -18,6 +18,7 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h2`
+  margin-bottom: 1.5em;
   @media (max-width: ${props => props.theme.breakpoints.l}) {
     text-align: center;
   }
