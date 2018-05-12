@@ -142,7 +142,7 @@ injectGlobal`
     text-align: left;
   }
   label {
-    display: inline-block;
+    display: block;
     margin-bottom: 0.5rem;
   }
   button:focus {

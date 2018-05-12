@@ -1,1 +1,2 @@
-functions = "project/functions/" 
+[build]
+  functions = "./functions"

@@ -1,65 +1,48 @@
+import 'rc-slider/assets/index.css';
 import React from 'react';
 import styled from 'react-emotion';
-import { navigateTo } from 'gatsby-link';
+import { Range } from 'rc-slider';
+import Button from './Button';
 
 const Wrapper = styled.section`
-  .main-content {
-    padding: 20px;
-  }
-
-  @media (max-width: 768px) {
-    .main-content {
-      padding: 20px 8px;
-    }
-  }
-
-  /* form specific formatting */
-  .form-group {
+  .flex-container-row {
+    display: -webkit-box;
+    display: -ms-flexbox;
     display: flex;
-    flex-direction: row;
-  }
+    -webkit-box-orient: horizontal;
+    -webkit-box-direction: normal;
+    -ms-flex-flow: row nowrap;
+    flex-flow: row wrap;
+    margin-bottom: 1em;
 
-  .form-group label {
-    flex: none;
-    display: block;
-    width: 125px;
-    font-weight: bold;
-    font-size: 1em;
-  }
-  .form-group label.right-inline {
-    text-align: right;
-    padding-right: 8px;
-    padding-left: 10px;
-    width: auto;
-  }
+    @media (max-width: ${props => props.theme.breakpoints.l}) {
+      input {
+        width: 100%;
+      }
 
-  .form-group .input-control {
-    flex: 1 1 auto;
-    display: block;
-    margin-bottom: 10px;
-    margin-right: 8px;
-    padding: 4px;
-    margin-top: -4px;
-  }
-
-  button {
-    padding: 5px 15px;
-    margin: 5px;
-    min-width: 100px;
-  }
-
-  @media (max-width: 768px) {
-    .form-group {
-      flex-direction: column;
+      .form-item {
+        margin-right: 0em;
+        width: 100%;
+      }
     }
-    .form-group .input-control {
-      margin-top: 2px;
-    }
-    .form-group label.right-inline {
-      text-align: left;
-      padding-right: 0;
-      padding-left: 0;
-    }
+  }
+
+  .margin {
+    margin-right: 1em;
+    margin-bottom: 0.5em;
+  }
+
+  form {
+    position: relative;
+    width: 100%;
+    max-width: 85rem;
+    font-size: 1.5em;
+    font-weight: normal;
+    line-height: 1.2222em;
+  }
+
+  textarea {
+    width: 100%;
   }
 `;
 
@@ -72,11 +55,21 @@ function encode(data) {
 class QuoteForm extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    const lower = props.budgetMax / 2;
+    const higher = props.budgetMax / 2 + props.budgetMin;
+    this.state = {
+      budget: [lower, higher],
+    };
   }
 
   handleChange = e => {
     this.setState({ [e.target.name]: e.target.value });
+  };
+
+  handleBudgetChange = budget => {
+    this.setState({
+      budget,
+    });
   };
 
   handleSubmit = e => {
@@ -85,20 +78,27 @@ class QuoteForm extends React.Component {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: encode({ 'form-name': 'contact', ...this.state }),
     })
-      .then(() => navigateTo('/thanks/'))
+      .then(() => this.successMessage())
       .catch(error => alert(error));
 
     e.preventDefault();
   };
 
+  successMessage = () => {
+    console.log(this.state);
+    document.getElementById('contactForm').reset();
+    this.setState({
+      budget: [this.props.budgetMin, this.props.budgetMax],
+    });
+  };
+
   render() {
     return (
-      <div>
-        <h1>Contact</h1>
+      <Wrapper>
         <form
+          id="contactForm"
           name="contact"
           method="post"
-          action="/thanks/"
           data-netlify="true"
           data-netlify-honeypot="bot-field"
           onSubmit={this.handleSubmit}
@@ -108,29 +108,48 @@ class QuoteForm extends React.Component {
               Don’t fill this out: <input name="bot-field" onChange={this.handleChange} />
             </label>
           </p>
-          <p>
-            <label>
-              Your name:<br />
-              <input type="text" name="name" onChange={this.handleChange} />
+
+          <div className="flex-container-row">
+            <div className="form-item margin">
+              <label htmlFor="name">Full Name:</label>
+              <input id="name" type="text" name="name" onChange={this.handleChange} />
+            </div>
+            <div className="form-item">
+              <label htmlFor="email">Email:</label>
+              <input id="email" type="email" name="email" onChange={this.handleChange} />
+            </div>
+          </div>
+
+          <div className="flex-container-row">
+            <label htmlFor="budget">
+              Budget: €{this.state.budget[0]} - €{this.state.budget[1]}
             </label>
-          </p>
-          <p>
-            <label>
-              Your email:<br />
-              <input type="email" name="email" onChange={this.handleChange} />
-            </label>
-          </p>
-          <p>
-            <label>
-              Message:<br />
-              <textarea name="message" onChange={this.handleChange} />
-            </label>
-          </p>
-          <p>
-            <button type="submit">Send</button>
-          </p>
+            <Range
+              id="budget"
+              value={this.state.budget}
+              onChange={this.handleBudgetChange}
+              allowCross={false}
+              min={this.props.budgetMin}
+              max={this.props.budgetMax}
+              step={25}
+            />
+          </div>
+          <label htmlFor="message">Message:</label>
+          <div className="flex-container-row">
+            <textarea
+              name="message"
+              cols="40"
+              rows="5"
+              placeholder="Tell us about your project"
+              onChange={this.handleChange}
+            />
+          </div>
+
+          <div className="flex-container-row">
+            <Button type="secondary">Send Message</Button>
+          </div>
         </form>
-      </div>
+      </Wrapper>
     );
   }
 }
