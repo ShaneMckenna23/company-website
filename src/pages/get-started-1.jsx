@@ -24,6 +24,44 @@ const Title = styled.h2`
   }
 `;
 
+const Services = styled.section`
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 15px 25px;
+  position: relative;
+  width: 50%;
+  z-index: 10;
+  box-shadow: 0px 10px 13px -6px rgba(0, 0, 0, 0.08), 0px 20px 31px 3px rgba(0, 0, 0, 0.09),
+    0px 8px 20px 7px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 3em;
+
+  * {
+    text-align: center;
+    text-transform: uppercase;
+  }
+
+  ul {
+    font-weight: 600;
+    letter-spacing: 1px;
+    list-style-type: none;
+    margin: 0;
+  }
+
+  li {
+    border-top: 1px solid #e1f1ff;
+    font-size: 15px;
+    line-height: 1.5;
+    padding: 15px 0;
+    margin-bottom: 0;
+  }
+
+  li:last-child {
+    border-bottom: 1px solid #e1f1ff;
+  }
+`;
+
 const GetStartedOne = props => (
   <React.Fragment>
     <Helmet title={`Get Started | ${config.siteTitle}`} />
@@ -32,7 +70,16 @@ const GetStartedOne = props => (
       <Title>Quota Form</Title>
       <Wrapper>
         <QuoteForm budgetMin={150} budgetMax={500} />
-        <div style={{ backgroundColor: 'red', height: '5em', width: '20em' }} >123</div>
+        <Services>
+          <h2 style={{ marginTop: ".5em" }}>Services</h2>
+          <ul>
+            <li>Single-Page Design</li>
+            <li>3 Months Hosting</li>
+            <li>Custom Domain</li>
+            <li>Global CDN</li>
+            <li>HTTPS connection</li>
+          </ul>
+        </Services>
       </Wrapper>
     </Container>
     <Footer />
