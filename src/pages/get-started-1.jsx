@@ -1,6 +1,7 @@
 import React from 'react';
 import Helmet from 'react-helmet';
 import styled from 'react-emotion';
+import FA from 'react-fontawesome';
 import Footer from '../components/Footer';
 import Container from '../components/Container';
 import Header from '../components/Header';
@@ -36,6 +37,7 @@ const Services = styled.section`
   display: flex;
   flex-direction: column;
   margin-bottom: 3em;
+  margin-left: 4em;
 
   * {
     text-align: center;
@@ -60,6 +62,16 @@ const Services = styled.section`
   li:last-child {
     border-bottom: 1px solid #e1f1ff;
   }
+
+  @media (max-width: 1200px) {
+    width: 80%;
+    margin-left: 0;
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.s}) {
+    width: 100%;
+    margin-left: 0;
+  }
 `;
 
 const GetStartedOne = props => (
@@ -71,7 +83,7 @@ const GetStartedOne = props => (
       <Wrapper>
         <QuoteForm budgetMin={150} budgetMax={500} />
         <Services>
-          <h2 style={{ marginTop: ".5em" }}>Services</h2>
+          <h2 style={{ marginTop: '.5em' }}>Services</h2>
           <ul>
             <li>Single-Page Design</li>
             <li>3 Months Hosting</li>
@@ -79,6 +91,12 @@ const GetStartedOne = props => (
             <li>Global CDN</li>
             <li>HTTPS connection</li>
           </ul>
+          <div style={{ display: 'flex', justifyContent: 'space-around', marginTop: '3em' }}>
+            <FA name="cubes" size="4x" />
+            <FA name="paint-brush" size="4x" />
+            <FA name="code" size="4x" />
+            <FA name="server" size="4x" />
+          </div>
         </Services>
       </Wrapper>
     </Container>
