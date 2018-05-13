@@ -93,7 +93,7 @@ const Pricing = () => (
       <ul>
         <li>One-Page</li>
         <li>Custom Domain</li>
-        <li>6 months Hosting</li>
+        <li>3 months Hosting</li>
       </ul>
       <Link to="/get-started-1">
         <Button type="secondary">Get Started</Button>
@@ -105,7 +105,7 @@ const Pricing = () => (
       <ul>
         <li>Multi-Page</li>
         <li>Custom Domnain</li>
-        <li>1 year hosting</li>
+        <li>6 months Hosting</li>
       </ul>
       <Link to="/get-started-2" test="true">
         <Button type="secondary">Get Started</Button>
