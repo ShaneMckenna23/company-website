@@ -51,7 +51,7 @@ const Navigation = () => (
   <Headroom calcHeightOnResize disableInlineStyles>
     <StyledLink to="/">
       <Logo />
-      <LogoText>Company Name</LogoText>
+      <LogoText>White Lake</LogoText>
     </StyledLink>
     <Nav>
       <Link to="/projects" activeClassName="active">

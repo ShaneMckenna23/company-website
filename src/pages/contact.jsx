@@ -55,18 +55,15 @@ const CardContainer = styled(Container)`
 const Contact = () => (
   <React.Fragment>
     <Helmet title={`Contact | ${config.siteTitle}`} />
-    <Header title="Contact">
-      I'm looking forward to hearing from you - whether you have a project request, need advice or just want to chat
-    </Header>
+    <Header title="Contact" />
     <Wrapper>
       <Container type="article">
-        <h3>
-          Want to work with us? We’re always looking for great challenges. Let us know a little more about your
-          objectives using the form below and we’ll get back to you
+        <h3 style={{ textAlign: 'center' }}>
+          I'm looking forward to hearing from you - whether you have a project request, need advice or just want to chat
         </h3>
       </Container>
       <CenteredContainer>
-        <a href="mailto:&#104;&#101;&#108;&#108;&#111;&#064;&#108;&#101;&#107;&#111;&#097;&#114;&#116;&#115;&#046;&#100;&#101;">
+        <a href="mailto:shanemckennadev@gmail.com">
           <Button type="primary">
             <Paperplane /> E-Mail
           </Button>
@@ -75,19 +72,19 @@ const Contact = () => (
       <CardContainer>
         <MyLinkCard link="https://www.discordapp.com" discord>
           <Discord />
-          Name
+          Comming Soon
         </MyLinkCard>
-        <MyLinkCard link="https://www.instagram.com/.de" instagram>
+        <MyLinkCard link="https://www.instagram.com/" instagram>
           <Instagram />
-          Name
+          Comming Soon
         </MyLinkCard>
         <MyLinkCard link="https://www.behance.net/" behance>
           <Behance />
-          Name
+          Comming Soon
         </MyLinkCard>
         <MyLinkCard link="https://youtube.com/" youtube>
           <YouTube />
-          Name
+          Comming Soon
         </MyLinkCard>
       </CardContainer>
     </Wrapper>
