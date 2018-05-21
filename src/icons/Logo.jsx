@@ -1,16 +1,5 @@
 import React from 'react';
 
-const Logo = () => (
-  <span
-    role="img"
-    aria-label="thinking"
-    style={{
-      fontSize: '30px',
-      verticalAlign: 'middle',
-    }}
-  >
-    🤔
-  </span>
-);
+const Logo = () => <div style={{ color: 'white'}}>S22</div>;
 
 export default Logo;

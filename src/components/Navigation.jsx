@@ -16,17 +16,6 @@ const StyledLink = styled(Link)`
   }
 `;
 
-const LogoText = styled.span`
-  text-transform: uppercase;
-  font-family: ${props => props.theme.fontFamily.heading};
-  font-size: 1.25rem;
-  margin-left: 0.75rem;
-  color: ${props => props.theme.colors.white.base};
-  @media (max-width: 500px) {
-    display: none;
-  }
-`;
-
 const Nav = styled.nav`
   display: flex;
   justify-content: flex-end;
@@ -51,7 +40,6 @@ const Navigation = () => (
   <Headroom calcHeightOnResize disableInlineStyles>
     <StyledLink to="/">
       <Logo />
-      <LogoText>White Lake</LogoText>
     </StyledLink>
     <Nav>
       <Link to="/projects" activeClassName="active">

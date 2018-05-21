@@ -430,10 +430,9 @@ const About = () => (
         <div className="col-lg-7">
           <div className="about-section-innr section-bg-lavendar">
             <div className="about-shade" />
-            <h6>About Company Name</h6>
+            <h6>About S22</h6>
             <h3>
-              Company Name <span>is a decentralized currency that trades and invest with powerful</span> blockchain
-              applications.
+              S22 <span>is a decentralized currency that trades and invest with powerful</span> blockchain applications.
             </h3>
             <p>ICO Crypto is a platform for future of funding that powering the new blockchain. </p>
             <p>

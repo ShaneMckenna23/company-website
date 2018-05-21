@@ -2,6 +2,8 @@ import React from 'react';
 import styled from 'react-emotion';
 import PropTypes from 'prop-types';
 import Wave from './Wave';
+import P5Wrapper from 'react-p5-wrapper';
+import sketch from './sketch.js';
 
 const Wrapper = styled.header`
   background: ${props => props.theme.gradient.rightToLeft};
@@ -44,6 +46,7 @@ const Header = ({ children, title, big }) => (
       <h1>{title}</h1>
       {children && <Subtitle>{children}</Subtitle>}
     </Text>
+    <P5Wrapper sketch={sketch} />
     <Wave />
   </Wrapper>
 );

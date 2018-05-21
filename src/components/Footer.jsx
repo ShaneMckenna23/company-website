@@ -106,7 +106,7 @@ const Footer = ({ children }) => {
             </a>
           </Item>
         </Content>
-        <Copyright>{`Copyright © ${date}. Company Name. All rights reserved.`}</Copyright>
+        <Copyright>{`Copyright © ${date}. S22. All rights reserved.`}</Copyright>
       </Container>
     </Wrapper>
   );
