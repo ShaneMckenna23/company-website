@@ -432,13 +432,11 @@ const About = () => (
             <div className="about-shade" />
             <h6>About S22</h6>
             <h3>
-              S22 <span>is a decentralized currency that trades and invest with powerful</span> blockchain applications.
+              S22 <span>is an engineering and design studio with an </span>entrepreneurial spirit.
             </h3>
-            <p>ICO Crypto is a platform for future of funding that powering the new blockchain. </p>
             <p>
-              ICOX Coin is a cryptocurrency designed for unde omnis iste natus error sit voluptatem accus antium
-              doloremque laudant aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae
-              dicta sunt explicabo.
+              We build our own in-house ventures as well as work alongside other teams to help them realise theirs. We
+              help founders at the formative stages of their venture, to take an idea from concept through to launch.
             </p>
           </div>
         </div>
