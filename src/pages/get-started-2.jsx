@@ -82,7 +82,7 @@ const GetStartedTwo = props => (
       <Wrapper>
         <QuoteForm budgetMin={350} budgetMax={1500} />
         <Services>
-          <h2 style={{ marginTop: ".5em" }}>Services</h2>
+          <h2 style={{ marginTop: '.5em' }}>Services</h2>
           <ul>
             <li>Multi-Page Design</li>
             <li>6 Months Hosting</li>

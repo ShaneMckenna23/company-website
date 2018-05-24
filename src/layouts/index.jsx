@@ -4,12 +4,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { injectGlobal } from 'emotion';
 import { ThemeProvider } from 'emotion-theming';
+import { ToastContainer } from 'react-toastify';
 import 'typeface-montserrat';
 import 'typeface-istok-web';
 import SEO from '../components/SEO';
 import Navigation from '../components/Navigation';
 import theme from '../../config/theme';
 import Helmet from 'react-helmet';
+import 'react-toastify/dist/ReactToastify.css';
 
 injectGlobal`
   *, *:before, *:after {
@@ -275,6 +277,17 @@ const MainLayout = ({ children }) => (
       </Helmet>
       <SEO />
       <Navigation />
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnVisibilityChange
+        draggable
+        pauseOnHover={false}
+      />
       {children()}
     </React.Fragment>
   </ThemeProvider>

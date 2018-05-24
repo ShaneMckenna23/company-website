@@ -7240,7 +7240,7 @@ module.exports = LeWindows;
 /* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var CONTACT_ADDRESS = 'me@company.com';
+var CONTACT_ADDRESS = 'shanemckennadev@gmail.com';
 var querystring = __webpack_require__(25);
 
 var mailer = __webpack_require__(26).createTransport({
@@ -7260,7 +7260,7 @@ module.exports.contact = function (event, context, callback) {
     html: body.message || '[No message]'
   }, function (err, info) {
     if (err) return callback(err);
-    callback(null, { statusCode: 200, body: "Success!" });
+    callback(null, { statusCode: 200, body: 'Success!' });
   });
 };
 

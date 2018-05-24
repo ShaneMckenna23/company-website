@@ -1,6 +1,7 @@
 import 'rc-slider/assets/index.css';
 import React from 'react';
 import styled from 'react-emotion';
+import { toast } from 'react-toastify';
 import { Range } from 'rc-slider';
 import Button from './Button';
 
@@ -113,12 +114,21 @@ class QuoteForm extends React.Component {
       .catch(error => alert(error));
 
     e.preventDefault();
+
+    toast.success('🚀 Quote Submission Successful', {
+      position: 'top-center',
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
+    });
   };
 
   successMessage = () => {
     document.getElementById('contactForm').reset();
-    const lower = props.budgetMax / 2;
-    const higher = props.budgetMax / 2 + props.budgetMin;
+    const lower = this.props.budgetMax / 2;
+    const higher = this.props.budgetMax / 2 + this.props.budgetMin;
     this.setState({
       budget: [lower, higher],
     });
@@ -144,11 +154,11 @@ class QuoteForm extends React.Component {
           <div className="flex-container-row">
             <div className="form-item margin">
               <label htmlFor="name">Full Name:</label>
-              <input id="name" type="text" name="name" onChange={this.handleChange} required/>
+              <input id="name" type="text" name="name" onChange={this.handleChange} required />
             </div>
             <div className="form-item">
               <label htmlFor="email">Email:</label>
-              <input id="email" type="email" name="email" onChange={this.handleChange} required/>
+              <input id="email" type="email" name="email" onChange={this.handleChange} required />
             </div>
           </div>
 
