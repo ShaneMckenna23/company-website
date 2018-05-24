@@ -7251,7 +7251,7 @@ var mailer = __webpack_require__(26).createTransport({
   }
 });
 
-exports.email = function (event, context, callback) {
+exports.handler = function (event, context, callback) {
   var body = querystring.parse(event.body);
   mailer.sendMail({
     from: body.from,

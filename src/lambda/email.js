@@ -9,7 +9,7 @@ const mailer = require('nodemailer').createTransport({
   },
 });
 
-exports.email = (event, context, callback) => {
+exports.handler = (event, context, callback) => {
   const body = querystring.parse(event.body);
   mailer.sendMail(
     {
