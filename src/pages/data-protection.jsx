@@ -90,12 +90,6 @@ const DataProtection = () => (
         </p>
         <h2>SSL-Encoding</h2>
         <p>
-          Diese Seite nutzt aus Gründen der Sicherheit und zum Schutz der Übertragung vertraulicher Inhalte, wie zum
-          Beispiel der Anfragen, die Sie an uns als Seitenbetreiber senden, eine SSL-Verschlüsselung. Eine
-          verschlüsselte Verbindung erkennen Sie daran, dass die Adresszeile des Browsers von "http://" auf "https://"
-          wechselt und an dem Schloss-Symbol in Ihrer Browserzeile.
-        </p>
-        <p>
           This site is used for security reasons and to protect the transmission of sensitive content, such as Example
           of requests you send to us as a site operator, an SSL encryption. A encrypted connection, you can tell by the
           browser's address bar from "http: //" to "https: //" changes and to the lock icon in your browser line.
