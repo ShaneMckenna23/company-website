@@ -25,8 +25,6 @@ exports.handler = (event, context, callback) => {
   );
 };
 
-let formattedDate = "test"
-
 let saleEmail = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   
@@ -101,7 +99,7 @@ let saleEmail = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
                                                         <a href="https://www.shopmoment.com/momentist/?utm_source=email&utm_medium=content&utm_campaign=general"
                                                         target="_self" style="word-wrap:break-word;color:#191919;font-weight:bold;text-decoration:none">
                                                           <img align="center" alt="The Momentist" class="kmImage" src="https://www.s22.studio/favicons/android-chrome-192x192.png"
-                                                          width="64" style="border:0;height:auto;line-height:100%;outline:none;text-decoration:none;padding-bottom:0;display:inline;vertical-align:top;font-size:12px;max-width:1200px;padding:0;border-width:0;">
+                                                          width="86" style="border:0;height:auto;line-height:100%;outline:none;text-decoration:none;padding-bottom:0;display:inline;vertical-align:top;font-size:12px;max-width:1200px;padding:0;border-width:0;">
                                                         </a>
                                                       </td>
                                                     </tr>
@@ -152,8 +150,7 @@ let saleEmail = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
                                                         <style type="text/css">
                                                           @import url("https://fonts.googleapis.com/css?family=Raleway:400|Sanchez:400,400italic|Lato:900");
                                                         </style>
-                                                        
-<h4 style='color:#8A8A8A;display:block;font-family:"Sanchez", Georgia, serif;font-size:13px;font-style:normal;font-weight:400;line-height:180%;letter-spacing:2px;margin:0;margin-bottom:9px;text-align:left;text-align: center;'><span style="color:#8C8C8C;"><em>` + formattedDate + `</em></span></h4>
+                                                       
 
                                                       </td>
                                                     </tr>
@@ -178,7 +175,7 @@ let saleEmail = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
                                                         <td class="kmImageContent" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0;font-size:0;padding:0;text-align: center;">
                                                           <a href="https://www.shopmoment.com/momentist/?utm_source=email&utm_medium=content&utm_campaign=general"
                                                           target="_self" style="word-wrap:break-word;color:#191919;font-weight:bold;text-decoration:none">
-                                                            <img align="center" alt="The Momentist" class="kmImage" src="https://d3k81ch9hvuctc.cloudfront.net/company/h3KqFy/images/dcfb4bb4-97bc-4591-9838-7875cf428aae.gif"
+                                                            <img align="center" alt="The Momentist" class="kmImage" src="https://www.s22.studio/rocket.gif"
                                                             width="600" style="border:0;height:auto;line-height:100%;outline:none;text-decoration:none;padding-bottom:0;display:inline;vertical-align:top;font-size:12px;max-width:800px;padding:0;border-width:0;background-color:#528fe7;">
                                                           </a>
                                                         </td>
