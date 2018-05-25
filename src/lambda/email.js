@@ -13,7 +13,7 @@ exports.handler = (event, context, callback) => {
   const body = querystring.parse(event.body);
   mailer.sendMail(
     {
-      from: body.from,
+      from: process.env.GMAIL_ADDRESS,
       to: [CONTACT_ADDRESS],
       subject: body.subject || 'Thank You',
       html: body.message || saleEmail,
