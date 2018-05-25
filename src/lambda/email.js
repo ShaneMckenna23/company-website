@@ -1,13 +1,17 @@
 const CONTACT_ADDRESS = 'shanemckennadev@gmail.com';
 const querystring = require('querystring');
+const smtpTransport = require('nodemailer-smtp-transport');
+const nodemailer = require('nodemailer');
 
-const mailer = require('nodemailer').createTransport({
-  service: 'Gmail',
-  auth: {
-    user: process.env.GMAIL_ADDRESS,
-    pass: process.env.GMAIL_PASSWORD,
-  },
-});
+const mailer = nodemailer.createTransport(
+  smtpTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_ADDRESS,
+      pass: process.env.GMAIL_PASSWORD,
+    },
+  })
+);
 
 exports.handler = (event, context, callback) => {
   const body = querystring.parse(event.body);

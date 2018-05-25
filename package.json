@@ -39,6 +39,7 @@
     "gatsby-transformer-sharp": "^1.6.22",
     "netlify-lambda": "^0.4.0",
     "nodemailer": "^4.6.4",
+    "nodemailer-smtp-transport": "^2.7.4",
     "p5": "^0.6.1",
     "polished": "^1.9.2",
     "prop-types": "^15.6.1",
@@ -75,6 +76,7 @@
   "scripts": {
     "dev": "gatsby develop -o",
     "build": "gatsby build",
+    "lambda": "netlify-lambda build ./src/lambda",
     "lint": "eslint **/*.js --ignore-pattern node_modules/",
     "lint:fix": "eslint **/*.js --fix --ignore-pattern node_modules/"
   }

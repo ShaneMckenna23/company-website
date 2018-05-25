@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 24);
+/******/ 	return __webpack_require__(__webpack_require__.s = 28);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -79,9 +79,9 @@ module.exports = require("stream");
 
 
 const urllib = __webpack_require__(5);
-const util = __webpack_require__(12);
+const util = __webpack_require__(6);
 const fs = __webpack_require__(8);
-const fetch = __webpack_require__(6);
+const fetch = __webpack_require__(9);
 
 /**
  * Parses connection url to a structured configuration object
@@ -489,17 +489,35 @@ module.exports = require("url");
 
 /***/ }),
 /* 6 */
+/***/ (function(module, exports) {
+
+module.exports = require("util");
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+module.exports = require("net");
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+module.exports = require("fs");
+
+/***/ }),
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const http = __webpack_require__(28);
-const https = __webpack_require__(29);
+const http = __webpack_require__(16);
+const https = __webpack_require__(17);
 const urllib = __webpack_require__(5);
-const zlib = __webpack_require__(30);
+const zlib = __webpack_require__(18);
 const PassThrough = __webpack_require__(0).PassThrough;
-const Cookies = __webpack_require__(31);
+const Cookies = __webpack_require__(42);
 const packageData = __webpack_require__(2);
 
 const MAX_REDIRECTS = 5;
@@ -772,7 +790,7 @@ function fetch(url, options) {
 
 
 /***/ }),
-/* 7 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -780,9 +798,9 @@ function fetch(url, options) {
 
 
 
-const base64 = __webpack_require__(18);
-const qp = __webpack_require__(19);
-const mimeTypes = __webpack_require__(13);
+const base64 = __webpack_require__(23);
+const qp = __webpack_require__(24);
+const mimeTypes = __webpack_require__(19);
 
 module.exports = {
     /**
@@ -1400,19 +1418,19 @@ module.exports = {
 
 
 /***/ }),
-/* 8 */
+/* 11 */
 /***/ (function(module, exports) {
 
-module.exports = require("fs");
+module.exports = require("tls");
 
 /***/ }),
-/* 9 */
+/* 12 */
 /***/ (function(module, exports) {
 
-module.exports = require("net");
+module.exports = require("os");
 
 /***/ }),
-/* 10 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1420,11 +1438,11 @@ module.exports = require("net");
 
 const packageInfo = __webpack_require__(2);
 const EventEmitter = __webpack_require__(4).EventEmitter;
-const net = __webpack_require__(9);
-const tls = __webpack_require__(20);
-const os = __webpack_require__(16);
+const net = __webpack_require__(7);
+const tls = __webpack_require__(11);
+const os = __webpack_require__(12);
 const crypto = __webpack_require__(3);
-const DataStream = __webpack_require__(44);
+const DataStream = __webpack_require__(55);
 const PassThrough = __webpack_require__(0).PassThrough;
 const shared = __webpack_require__(1);
 
@@ -2988,7 +3006,7 @@ module.exports = SMTPConnection;
 
 
 /***/ }),
-/* 11 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3047,13 +3065,314 @@ module.exports = LeWindows;
 
 
 /***/ }),
-/* 12 */
-/***/ (function(module, exports) {
+/* 15 */
+/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = require("util");
+"use strict";
+
+
+var urllib = __webpack_require__(5);
+var util = __webpack_require__(6);
+var fs = __webpack_require__(8);
+var fetch = __webpack_require__(34);
+
+/**
+ * Parses connection url to a structured configuration object
+ *
+ * @param {String} str Connection url
+ * @return {Object} Configuration object
+ */
+module.exports.parseConnectionUrl = function (str) {
+    str = str || '';
+    var options = {};
+
+    [urllib.parse(str, true)].forEach(function (url) {
+        var auth;
+
+        switch (url.protocol) {
+            case 'smtp:':
+                options.secure = false;
+                break;
+            case 'smtps:':
+                options.secure = true;
+                break;
+            case 'direct:':
+                options.direct = true;
+                break;
+        }
+
+        if (!isNaN(url.port) && Number(url.port)) {
+            options.port = Number(url.port);
+        }
+
+        if (url.hostname) {
+            options.host = url.hostname;
+        }
+
+        if (url.auth) {
+            auth = url.auth.split(':');
+
+            if (!options.auth) {
+                options.auth = {};
+            }
+
+            options.auth.user = auth.shift();
+            options.auth.pass = auth.join(':');
+        }
+
+        Object.keys(url.query || {}).forEach(function (key) {
+            var obj = options;
+            var lKey = key;
+            var value = url.query[key];
+
+            if (!isNaN(value)) {
+                value = Number(value);
+            }
+
+            switch (value) {
+                case 'true':
+                    value = true;
+                    break;
+                case 'false':
+                    value = false;
+                    break;
+            }
+
+            // tls is nested object
+            if (key.indexOf('tls.') === 0) {
+                lKey = key.substr(4);
+                if (!options.tls) {
+                    options.tls = {};
+                }
+                obj = options.tls;
+            } else if (key.indexOf('.') >= 0) {
+                // ignore nested properties besides tls
+                return;
+            }
+
+            if (!(lKey in obj)) {
+                obj[lKey] = value;
+            }
+        });
+    });
+
+    return options;
+};
+
+/**
+ * Returns a bunyan-compatible logger interface. Uses either provided logger or
+ * creates a default console logger
+ *
+ * @param {Object} [options] Options object that might include 'logger' value
+ * @return {Object} bunyan compatible logger
+ */
+module.exports.getLogger = function (options) {
+    options = options || {};
+
+    if (!options.logger) {
+        // use vanity logger
+        return {
+            info: function () {},
+            debug: function () {},
+            error: function () {}
+        };
+    }
+
+    if (options.logger === true) {
+        // create console logger
+        return createDefaultLogger();
+    }
+
+    // return whatever was passed
+    return options.logger;
+};
+
+/**
+ * Wrapper for creating a callback than either resolves or rejects a promise
+ * based on input
+ *
+ * @param {Function} resolve Function to run if callback is called
+ * @param {Function} reject Function to run if callback ends with an error
+ */
+module.exports.callbackPromise = function (resolve, reject) {
+    return function () {
+        var args = Array.prototype.slice.call(arguments);
+        var err = args.shift();
+        if (err) {
+            reject(err);
+        } else {
+            resolve.apply(null, args);
+        }
+    };
+};
+
+/**
+ * Resolves a String or a Buffer value for content value. Useful if the value
+ * is a Stream or a file or an URL. If the value is a Stream, overwrites
+ * the stream object with the resolved value (you can't stream a value twice).
+ *
+ * This is useful when you want to create a plugin that needs a content value,
+ * for example the `html` or `text` value as a String or a Buffer but not as
+ * a file path or an URL.
+ *
+ * @param {Object} data An object or an Array you want to resolve an element for
+ * @param {String|Number} key Property name or an Array index
+ * @param {Function} callback Callback function with (err, value)
+ */
+module.exports.resolveContent = function (data, key, callback) {
+    var promise;
+
+    if (!callback && typeof Promise === 'function') {
+        promise = new Promise(function (resolve, reject) {
+            callback = module.exports.callbackPromise(resolve, reject);
+        });
+    }
+
+    var content = data && data[key] && data[key].content || data[key];
+    var contentStream;
+    var encoding = (typeof data[key] === 'object' && data[key].encoding || 'utf8')
+        .toString()
+        .toLowerCase()
+        .replace(/[-_\s]/g, '');
+
+    if (!content) {
+        return callback(null, content);
+    }
+
+    if (typeof content === 'object') {
+        if (typeof content.pipe === 'function') {
+            return resolveStream(content, function (err, value) {
+                if (err) {
+                    return callback(err);
+                }
+                // we can't stream twice the same content, so we need
+                // to replace the stream object with the streaming result
+                data[key] = value;
+                callback(null, value);
+            });
+        } else if (/^https?:\/\//i.test(content.path || content.href)) {
+            contentStream = fetch(content.path || content.href);
+            return resolveStream(contentStream, callback);
+        } else if (/^data:/i.test(content.path || content.href)) {
+            var parts = (content.path || content.href).match(/^data:((?:[^;]*;)*(?:[^,]*)),(.*)$/i);
+            if (!parts) {
+                return callback(null, new Buffer(0));
+            }
+            return callback(null, /\bbase64$/i.test(parts[1]) ? new Buffer(parts[2], 'base64') : new Buffer(decodeURIComponent(parts[2])));
+        } else if (content.path) {
+            return resolveStream(fs.createReadStream(content.path), callback);
+        }
+    }
+
+    if (typeof data[key].content === 'string' && ['utf8', 'usascii', 'ascii'].indexOf(encoding) < 0) {
+        content = new Buffer(data[key].content, encoding);
+    }
+
+    // default action, return as is
+    setImmediate(callback.bind(null, null, content));
+
+    return promise;
+};
+
+/**
+ * Streams a stream value into a Buffer
+ *
+ * @param {Object} stream Readable stream
+ * @param {Function} callback Callback function with (err, value)
+ */
+function resolveStream(stream, callback) {
+    var responded = false;
+    var chunks = [];
+    var chunklen = 0;
+
+    stream.on('error', function (err) {
+        if (responded) {
+            return;
+        }
+
+        responded = true;
+        callback(err);
+    });
+
+    stream.on('readable', function () {
+        var chunk;
+        while ((chunk = stream.read()) !== null) {
+            chunks.push(chunk);
+            chunklen += chunk.length;
+        }
+    });
+
+    stream.on('end', function () {
+        if (responded) {
+            return;
+        }
+        responded = true;
+
+        var value;
+
+        try {
+            value = Buffer.concat(chunks, chunklen);
+        } catch (E) {
+            return callback(E);
+        }
+        callback(null, value);
+    });
+}
+
+/**
+ * Generates a bunyan-like logger that prints to console
+ *
+ * @returns {Object} Bunyan logger instance
+ */
+function createDefaultLogger() {
+
+    var logger = {
+        _print: function ( /* level, message */ ) {
+            var args = Array.prototype.slice.call(arguments);
+            var level = args.shift();
+            var message;
+
+            if (args.length > 1) {
+                message = util.format.apply(util, args);
+            } else {
+                message = args.shift();
+            }
+
+            console.log('[%s] %s: %s',
+                new Date().toISOString().substr(0, 19).replace(/T/, ' '),
+                level.toUpperCase(),
+                message);
+        }
+    };
+
+    logger.info = logger._print.bind(null, 'info');
+    logger.debug = logger._print.bind(null, 'debug');
+    logger.error = logger._print.bind(null, 'error');
+
+    return logger;
+}
+
 
 /***/ }),
-/* 13 */
+/* 16 */
+/***/ (function(module, exports) {
+
+module.exports = require("http");
+
+/***/ }),
+/* 17 */
+/***/ (function(module, exports) {
+
+module.exports = require("https");
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports) {
+
+module.exports = require("zlib");
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -3061,7 +3380,7 @@ module.exports = require("util");
 
 
 
-const path = __webpack_require__(14);
+const path = __webpack_require__(20);
 
 const defaultMimeType = 'application/octet-stream';
 const defaultExtension = 'bin';
@@ -5169,13 +5488,13 @@ module.exports = {
 
 
 /***/ }),
-/* 14 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = require("path");
 
 /***/ }),
-/* 15 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -5184,17 +5503,17 @@ module.exports = require("path");
 
 
 const crypto = __webpack_require__(3);
-const os = __webpack_require__(16);
+const os = __webpack_require__(12);
 const fs = __webpack_require__(8);
-const punycode = __webpack_require__(17);
+const punycode = __webpack_require__(22);
 const PassThrough = __webpack_require__(0).PassThrough;
 
-const mimeFuncs = __webpack_require__(7);
-const qp = __webpack_require__(19);
-const base64 = __webpack_require__(18);
-const addressparser = __webpack_require__(33);
-const fetch = __webpack_require__(6);
-const LastNewline = __webpack_require__(34);
+const mimeFuncs = __webpack_require__(10);
+const qp = __webpack_require__(24);
+const base64 = __webpack_require__(23);
+const addressparser = __webpack_require__(44);
+const fetch = __webpack_require__(9);
+const LastNewline = __webpack_require__(45);
 
 /**
  * Creates a new mime tree node. Assumes 'multipart/*' as the content type
@@ -6421,19 +6740,13 @@ module.exports = MimeNode;
 
 
 /***/ }),
-/* 16 */
-/***/ (function(module, exports) {
-
-module.exports = require("os");
-
-/***/ }),
-/* 17 */
+/* 22 */
 /***/ (function(module, exports) {
 
 module.exports = require("punycode");
 
 /***/ }),
-/* 18 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6582,7 +6895,7 @@ module.exports = {
 
 
 /***/ }),
-/* 19 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -6808,20 +7121,14 @@ module.exports = {
 
 
 /***/ }),
-/* 20 */
-/***/ (function(module, exports) {
-
-module.exports = require("tls");
-
-/***/ }),
-/* 21 */
+/* 25 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const Stream = __webpack_require__(0).Stream;
-const fetch = __webpack_require__(6);
+const fetch = __webpack_require__(9);
 const crypto = __webpack_require__(3);
 const shared = __webpack_require__(1);
 
@@ -7133,13 +7440,13 @@ module.exports = XOAuth2;
 
 
 /***/ }),
-/* 22 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const services = __webpack_require__(45);
+const services = __webpack_require__(56);
 const normalized = {};
 
 Object.keys(services).forEach(key => {
@@ -7187,7 +7494,7 @@ module.exports = function(key) {
 
 
 /***/ }),
-/* 23 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7237,19 +7544,21 @@ module.exports = LeWindows;
 
 
 /***/ }),
-/* 24 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var CONTACT_ADDRESS = 'shanemckennadev@gmail.com';
-var querystring = __webpack_require__(25);
+var querystring = __webpack_require__(29);
+var smtpTransport = __webpack_require__(30);
+var nodemailer = __webpack_require__(40);
 
-var mailer = __webpack_require__(26).createTransport({
-  service: 'Gmail',
+var mailer = nodemailer.createTransport(smtpTransport({
+  service: 'gmail',
   auth: {
     user: process.env.GMAIL_ADDRESS,
     pass: process.env.GMAIL_PASSWORD
   }
-});
+}));
 
 exports.handler = function (event, context, callback) {
   var body = querystring.parse(event.body);
@@ -7267,27 +7576,2863 @@ exports.handler = function (event, context, callback) {
 var saleEmail = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">\n<html xmlns="http://www.w3.org/1999/xhtml">\n  \n  <head>\n    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <title></title>\n    <style type="text/css">\n      @media yahoo{.kmHide,.kmMobileOnly,.kmMobileHeaderStackDesktopNone,.kmMobileWrapHeaderDesktopNone{display:none;font-size:0 !important;line-height:0 !important;mso-hide:all !important;max-height:0 !important;max-width:0 !important;width:0 !important}}@media only screen and (max-width:480px){body,table,td,p,a,li,blockquote{-webkit-text-size-adjust:none !important}body{width:100% !important;min-width:100% !important}td[id=bodyCell]{padding:12px !important}table.kmMobileHide{display:none !important}table.kmDesktopOnly,td.kmDesktopOnly,th.kmDesktopOnly,tr.kmDesktopOnly,td.kmDesktopWrapHeaderMobileNone{display:none !important}table.kmMobileOnly{display:table !important}tr.kmMobileOnly{display:table-row !important}td.kmMobileOnly,td.kmDesktopWrapHeader,th.kmMobileOnly{display:table-cell !important}tr.kmMobileNoAlign,table.kmMobileNoAlign{float:none !important;text-align:initial !important;vertical-align:middle !important;table-layout:fixed !important}tr.kmMobileCenterAlign{float:none !important;text-align:center !important;vertical-align:middle !important;table-layout:fixed !important}td.kmButtonCollection{padding-left:9px !important;padding-right:9px !important;padding-top:9px !important;padding-bottom:9px !important}td.kmMobileHeaderStackDesktopNone,img.kmMobileHeaderStackDesktopNone,td.kmMobileHeaderStack{display:block !important;margin-left:auto !important;margin-right:auto !important;padding-bottom:9px !important;padding-right:0 !important;padding-left:0 !important}td.kmMobileWrapHeader,td.kmMobileWrapHeaderDesktopNone{display:inline-block !important}td.kmMobileHeaderSpacing{padding-right:10px !important}td.kmMobileHeaderNoSpacing{padding-right:0 !important}table.kmDesktopAutoWidth{width:inherit !important}table.kmMobileAutoWidth{width:100% !important}table[class=kmTextContentContainer]{width:100% !important}table[class=kmBoxedTextContentContainer]{width:100% !important}td[class=kmImageContent]{padding-left:0 !important;padding-right:0 !important}img[class=kmImage],img.kmImage{width:100% !important}td.kmMobileStretch{padding-left:0 !important;padding-right:0 !important}table[class=kmSplitContentLeftContentContainer],table.kmSplitContentLeftContentContainer,table[class=kmSplitContentRightContentContainer],table.kmSplitContentRightContentContainer,table[class=kmColumnContainer],td[class=kmVerticalButtonBarContentOuter] table[class=kmButtonBarContent],td[class=kmVerticalButtonCollectionContentOuter] table[class=kmButtonCollectionContent],table[class=kmVerticalButton],table[class=kmVerticalButtonContent]{width:100% !important}td[class=kmButtonCollectionInner]{padding-left:9px !important;padding-right:9px !important;padding-top:9px !important;padding-bottom:0 !important}td[class=kmVerticalButtonIconContent],td[class=kmVerticalButtonTextContent],td[class=kmVerticalButtonContentOuter]{padding-left:0 !important;padding-right:0 !important;padding-bottom:9px !important}table[class=kmSplitContentLeftContentContainer] td[class=kmTextContent],table[class=kmSplitContentRightContentContainer] td[class=kmTextContent],table[class=kmColumnContainer] td[class=kmTextContent],table[class=kmSplitContentLeftContentContainer] td[class=kmImageContent],table[class=kmSplitContentRightContentContainer] td[class=kmImageContent],table.kmSplitContentLeftContentContainer td.kmImageContent,table.kmSplitContentRightContentContainer td.kmImageContent{padding-top:9px !important}td[class="rowContainer kmFloatLeft"],td.rowContainer.kmFloatLeft,td[class="rowContainer kmFloatLeft firstColumn"],td.rowContainer.kmFloatLeft.firstColumn,td[class="rowContainer kmFloatLeft lastColumn"],td.rowContainer.kmFloatLeft.lastColumn{float:left;clear:both;width:100% !important}table[class=templateContainer],table[class="templateContainer brandingContainer"],div[class=templateContainer],div[class="templateContainer brandingContainer"],table[class=templateRow]{max-width:600px !important;width:100% !important}td[class=templateContainerInner]{padding:0 !important}h1{font-size:30px !important;line-height:100%px !important}h2{font-size:22px !important;line-height:100%px !important}h3{font-size:16px !important;line-height:100%px !important}h4{font-size:14px !important;line-height:100%px !important}td[class=kmTextContent]{font-size:14px !important;line-height:130% !important}td[class=kmTextBlockInner] td[class=kmTextContent]{padding-right:18px !important;padding-left:18px !important}table[class="kmTableBlock kmTableMobile"] td[class=kmTableBlockInner]{padding-left:9px !important;padding-right:9px !important}table[class="kmTableBlock kmTableMobile"] td[class=kmTableBlockInner] [class=kmTextContent]{font-size:14px !important;line-height:130% !important;padding-left:4px !important;padding-right:4px !important}td[class=kmTextBlockInner] td[class=kmTextContent],td[class=kmImageBlockInner],td[class=kmSplitBlockInner],td[class=kmButtonBlockInner],td[class=kmButtonBarInner],td[class=kmDividerBlockInner],table[class="kmTableBlock kmTableMobile"] td[class=kmTableBlockInner]{padding-left:20px !important;padding-right:20px !important}}\n    </style>\n    <!--[if mso]>\n      <style>\n        .templateContainer {\n          border: 0px none #AAAAAA;\n          background-color: #528fe7;\n          \n            border-radius: 0px;\n          \n        }\n        #brandingContainer {\n          background-color: transparent !important;\n          border: 0;\n        }\n        \n        \n        .templateContainerInner {\n          padding: 0px;\n        }\n      </style>\n    <![endif]-->\n  </head>\n  \n  <body style=\'margin:0;padding:0;font-family:"Raleway", Helvetica, sans-serif;font-weight:400;letter-spacing:0.75px;line-height:180%;background-color:#528fe7\'>\n    <center>\n      <table align="center" border="0" cellpadding="0" cellspacing="0" id="bodyTable"\n      width="100%" data-upload-file-url="/ajax/email-editor/file/upload" data-upload-files-url="/ajax/email-editor/files/upload"\n      style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0;background-color:#528fe7;height:100%;margin:0;width:100%">\n        <tbody>\n          <tr>\n            <td align="center" id="bodyCell" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding-top:10px;padding-left:20px;padding-bottom:20px;padding-right:20px;border-top:0;height:100%;margin:0;width:100%">\n              <!--[if !mso]>\n                <!-->\n                <div class="templateContainer" style="border:0 none #AAA;background-color:#528fe7;border-radius:0;display: table; width:600px">\n                  <div class="templateContainerInner" style="padding:0">\n                  <!--<![endif]-->\n                  <!--[if mso]>\n                    <table border="0" cellpadding="0" cellspacing="0" class="templateContainer" width="600"\n                    style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;">\n                      <tbody>\n                        <tr>\n                          <td class="templateContainerInner" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;">\n                          <![endif]-->\n                          <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                            <tr>\n                              <td align="center" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                <table border="0" cellpadding="0" cellspacing="0" class="templateRow" width="100%"\n                                style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                  <tbody>\n                                    <tr>\n                                      <td class="rowContainer kmFloatLeft" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                        <table border="0" cellpadding="0" cellspacing="0" class="kmImageBlock kmDesktopOnly"\n                                        width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;min-width:100%">\n                                          <tbody class="kmImageBlockOuter">\n                                            <tr>\n                                              <td class="kmImageBlockInner" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0px;padding-top:20px;padding-right:0px;padding-left:0px;"\n                                              valign="top">\n                                                <table align="left" border="0" cellpadding="0" cellspacing="0" class="kmImageContentContainer"\n                                                width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;min-width:100%">\n                                                  <tbody>\n                                                    <tr>\n                                                      <td class="kmImageContent" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0;font-size:0;padding:0;text-align: center;">\n                                                        <a href="https://www.shopmoment.com/momentist/?utm_source=email&utm_medium=content&utm_campaign=general"\n                                                        target="_self" style="word-wrap:break-word;color:#191919;font-weight:bold;text-decoration:none">\n                                                          <img align="center" alt="The Momentist" class="kmImage" src="https://www.s22.studio/favicons/android-chrome-192x192.png"\n                                                          width="86" style="border:0;height:auto;line-height:100%;outline:none;text-decoration:none;padding-bottom:0;display:inline;vertical-align:top;font-size:12px;max-width:1200px;padding:0;border-width:0;">\n                                                        </a>\n                                                      </td>\n                                                    </tr>\n                                                  </tbody>\n                                                </table>\n                                              </td>\n                                            </tr>\n                                          </tbody>\n                                        </table>\n                                        <!--[if !mso]>\n                                          <!-->\n                                          \n                                        <!--<![endif]-->\n                                        <table border="0" cellpadding="0" cellspacing="0" class="kmImageBlock" width="100%"\n                                        style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;min-width:100%">\n                                          <tbody class="kmImageBlockOuter">\n                                            <tr>\n                                              <td class="kmImageBlockInner kmMobileStretch" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0px;padding-top:20px;background-color:#528fe7;"\n                                              valign="top">\n                                                <table align="left" border="0" cellpadding="0" cellspacing="0" class="kmImageContentContainer"\n                                                width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;min-width:100%">\n                                                  <tbody>\n                                                    <tr>\n                                                      <td class="kmImageContent" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0;font-size:0;padding:0;text-align: center;">\n                                                        <a href="https://www.shopmoment.com/momentist/?utm_source=email&utm_medium=content&utm_campaign=general"\n                                                        target="_self" style="word-wrap:break-word;color:#191919;font-weight:bold;text-decoration:none">\n                                                          <img align="center" alt="The Momentist" class="kmImage" src="https://mir-s3-cdn-cf.behance.net/project_modules/disp/cab4c932437055.5682ac94eecc6.gif"\n                                                          width="600" style="border:0;height:auto;line-height:100%;outline:none;text-decoration:none;padding-bottom:0;display:inline;vertical-align:top;font-size:12px;max-width:600px;background-color:#528fe7;">\n                                                        </a>\n                                                      </td>\n                                                    </tr>\n                                                  </tbody>\n                                                </table>\n                                              </td>\n                                            </tr>\n                                          </tbody>\n                                        </table>\n                                        <table border="0" cellpadding="0" cellspacing="0" class="kmTextBlock" width="100%"\n                                        style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                          <tbody class="kmTextBlockOuter">\n                                            <tr>\n                                              <td class="kmTextBlockInner" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;">\n                                                <table align="left" border="0" cellpadding="0" cellspacing="0" class="kmTextContentContainer"\n                                                width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                                  <tbody>\n                                                    <tr>\n                                                      <td class="kmTextContent" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;color:#191919;font-family:Helvetica, Arial;font-size:13px;line-height:200%;letter-spacing:normal;text-align:left;color:#EEEDEA;padding-bottom:0px;padding-right:0px;padding-left:0px;padding-top:60px;background-color:#FFFFFF;">\n                                                        <style type="text/css">\n                                                          @import url("https://fonts.googleapis.com/css?family=Raleway:400|Sanchez:400,400italic|Lato:900");\n                                                        </style>\n                                                       \n\n                                                      </td>\n                                                    </tr>\n                                                  </tbody>\n                                                </table>\n                                              </td>\n                                            </tr>\n                                          </tbody>\n                                        </table>\n                                        <!--[if !mso]>\n                                          <!-->\n                                          <table border="0" cellpadding="0" cellspacing="0" class="kmImageBlock kmMobileOnly"\n                                          width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;display:none;min-width:100%">\n                                            <tbody class="kmImageBlockOuter">\n                                              <tr>\n                                                <td class="kmImageBlockInner" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0px;padding-right:0px;background-color:#FFFFFF;padding-left:0px;"\n                                                valign="top">\n                                                  <table align="left" border="0" cellpadding="0" cellspacing="0" class="kmImageContentContainer"\n                                                  width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;min-width:100%">\n                                                    <tbody>\n                                                      <tr>\n                                                        <td class="kmImageContent" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0;font-size:0;padding:0;text-align: center;">\n                                                          <a href="https://www.shopmoment.com/momentist/?utm_source=email&utm_medium=content&utm_campaign=general"\n                                                          target="_self" style="word-wrap:break-word;color:#191919;font-weight:bold;text-decoration:none">\n                                                            <img align="center" alt="The Momentist" class="kmImage" src="https://www.s22.studio/rocket.gif"\n                                                            width="600" style="border:0;height:auto;line-height:100%;outline:none;text-decoration:none;padding-bottom:0;display:inline;vertical-align:top;font-size:12px;max-width:800px;padding:0;border-width:0;background-color:#528fe7;">\n                                                          </a>\n                                                        </td>\n                                                      </tr>\n                                                    </tbody>\n                                                  </table>\n                                                </td>\n                                              </tr>\n                                            </tbody>\n                                          </table>\n                                        <!--<![endif]-->\n                                        <table border="0" cellpadding="0" cellspacing="0" class="kmImageBlock kmDesktopOnly"\n                                        width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;min-width:100%">\n                                          <tbody class="kmImageBlockOuter">\n                                            <tr>\n                                              <td class="kmImageBlockInner" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0px;padding-top:10px;background-color:#FFFFFF;"\n                                              valign="top">\n                                                <table align="left" border="0" cellpadding="0" cellspacing="0" class="kmImageContentContainer"\n                                                width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;min-width:100%">\n                                                  <tbody>\n                                                    <tr>\n                                                      <td class="kmImageContent" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;padding:0;font-size:0;padding:0;text-align: center;">\n                                                        <a href="https://www.shopmoment.com/momentist/?utm_source=email&utm_medium=content&utm_campaign=general"\n                                                        target="_self" style="word-wrap:break-word;color:#191919;font-weight:bold;text-decoration:none">\n                                                          <h1  style="border:0;height:auto;line-height:100%;outline:none;text-decoration:none;padding-bottom:0;display:inline;vertical-align:top;font-size:28px;max-width:1200px;">S22 Studio</h1>\n                                                        </a>\n                                                      </td>\n                                                    </tr>\n                                                  </tbody>\n                                                </table>\n                                              </td>\n                                            </tr>\n                                          </tbody>\n                                        </table>\n                                      </td>\n                                    </tr>\n                                  </tbody>\n                                </table>\n                              </td>\n                            </tr>\n                            <tr>\n                              <td align="center" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                <table border="0" cellpadding="0" cellspacing="0" class="templateRow" width="100%"\n                                style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                  <tbody>\n                                    <tr>\n                                      <td class="rowContainer kmFloatLeft" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                        <table border="0" cellpadding="0" cellspacing="0" class="kmTextBlock" width="100%"\n                                        style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                          <tbody class="kmTextBlockOuter">\n                                            <tr>\n                                              <td class="kmTextBlockInner" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;background-color:#FFFFFF;">\n                                                <table align="left" border="0" cellpadding="0" cellspacing="0" class="kmTextContentContainer"\n                                                width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                                  <tbody>\n                                                    <tr>\n                                                      <td class="kmTextContent" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;color:#191919;font-family:Helvetica, Arial;font-size:13px;line-height:200%;letter-spacing:normal;text-align:left;padding-top:40px;padding-bottom:80px;padding-left:80px;padding-right:80px;">\n                                                        <p style=\'margin:0;padding-bottom:1em;font-family:"Raleway", Helvetica, sans-serif;font-weight:400;letter-spacing:0.75px;line-height:180%\'>Thank you for getting in touch!\n\nWe appreciate your interest in working with us. <br><br>One of our colleagues will get back to you shortly.\n\nHave a great day!\n</p>\n                                                        <p style=\'margin:0;padding-bottom:1em;font-family:"Raleway", Helvetica, sans-serif;font-weight:400;letter-spacing:0.75px;line-height:180%\'>- S22 Studio</p>\n                                                      </td>\n                                                    </tr>\n                                                  </tbody>\n                                                </table>\n                                              </td>\n                                            </tr>\n                                          </tbody>\n                                        </table>\n                                        \n                                        \n                                        \n                                        \n                                        \n                                        \n                                        \n                                       \n                                        <table border="0" cellpadding="0" cellspacing="0" class="kmTextBlock" width="100%"\n                                        style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                          <tbody class="kmTextBlockOuter">\n                                            <tr>\n                                              <td class="kmTextBlockInner" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;background-color:#528fe7;">\n                                                <table align="left" border="0" cellpadding="0" cellspacing="0" class="kmTextContentContainer"\n                                                width="100%" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0">\n                                                  <tbody>\n                                                    <tr>\n                                                      <td class="kmTextContent" valign="top" style="border-collapse:collapse;mso-table-lspace:0;mso-table-rspace:0;color:#191919;font-family:Helvetica, Arial;font-size:13px;line-height:200%;letter-spacing:normal;text-align:left;padding-top:30px;padding-bottom:0px;background-color:#528fe7;padding-left:18px;padding-right:18px;">\n                                                        <p style=\'margin:0;padding-bottom:1em;font-family:"Raleway", Helvetica, sans-serif;font-weight:400;letter-spacing:0.75px;line-height:180%;text-align: center;\'><span style="color:#ffffff;"><span style="font-size:10px;"><span style="line-height: 20.8px;">San Diego, CA</span></span>\n                                                          </span>\n                                                        </p>\n                                                        <p style=\'margin:0;padding-bottom:0;font-family:"Raleway", Helvetica, sans-serif;font-weight:400;letter-spacing:0.75px;line-height:180%;text-align: center;\'><span style="color:#ffffff;"><span style="font-size:10px;"><em><span style="line-height: 20.8px; text-align: center;"><a class="unsubscribe-link" style="color:#ffffff;font-weight:bold;text-decoration:none;" href="https://www.s22.studio/">Website</a></span>\n                                                          </em>\n                                                          </span>\n                                                          </span>\n                                                        </p>\n                                                      </td>\n                                                    </tr>\n                                                  </tbody>\n                                                </table>\n                                              </td>\n                                            </tr>\n                                          </tbody>\n                                        </table>\n                                      </td>\n                                    </tr>\n                                  </tbody>\n                                </table>\n                              </td>\n                            </tr>\n                          </table>\n                          <!--[if !mso]>\n                            <!-->\n                  </div>\n                </div>\n              <!--<![endif]-->\n              <!--[if mso]>\n                </td>\n                </tr>\n                </tbody>\n                </table>\n              <![endif]-->\n            </td>\n          </tr>\n        </tbody>\n      </table>\n    </center>\n   \n  </body>\n\n</html>';
 
 /***/ }),
-/* 25 */
+/* 29 */
 /***/ (function(module, exports) {
 
 module.exports = require("querystring");
 
 /***/ }),
-/* 26 */
+/* 30 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const Mailer = __webpack_require__(27);
+var SMTPConnection = __webpack_require__(31);
+var packageData = __webpack_require__(37);
+var wellknown = __webpack_require__(38);
+var shared = __webpack_require__(15);
+
+var EventEmitter = __webpack_require__(4).EventEmitter;
+var util = __webpack_require__(6);
+
+// expose to the world
+module.exports = function (options) {
+    return new SMTPTransport(options);
+};
+
+/**
+ * Creates a SMTP transport object for Nodemailer
+ *
+ * @constructor
+ * @param {Object} options Connection options
+ */
+function SMTPTransport(options) {
+    EventEmitter.call(this);
+
+    options = options || {};
+    if (typeof options === 'string') {
+        options = {
+            url: options
+        };
+    }
+
+    var urlData;
+    var service = options.service;
+
+    if (typeof options.getSocket === 'function') {
+        this.getSocket = options.getSocket;
+    }
+
+    if (options.url) {
+        urlData = shared.parseConnectionUrl(options.url);
+        service = service || urlData.service;
+    }
+
+    this.options = assign(
+        false, // create new object
+        options, // regular options
+        urlData, // url options
+        service && wellknown(service) // wellknown options
+    );
+
+    this.logger = shared.getLogger(this.options);
+
+    // temporary object
+    var connection = new SMTPConnection(this.options);
+
+    this.name = 'SMTP';
+    this.version = packageData.version + '[client:' + connection.version + ']';
+}
+util.inherits(SMTPTransport, EventEmitter);
+
+/**
+ * Placeholder function for creating proxy sockets. This method immediatelly returns
+ * without a socket
+ *
+ * @param {Object} options Connection options
+ * @param {Function} callback Callback function to run with the socket keys
+ */
+SMTPTransport.prototype.getSocket = function (options, callback) {
+    // return immediatelly
+    return callback(null, false);
+};
+
+/**
+ * Sends an e-mail using the selected settings
+ *
+ * @param {Object} mail Mail object
+ * @param {Function} callback Callback function
+ */
+SMTPTransport.prototype.send = function (mail, callback) {
+
+    this.getSocket(this.options, function (err, socketOptions) {
+        if (err) {
+            return callback(err);
+        }
+
+        var options = this.options;
+        if (socketOptions && socketOptions.connection) {
+            this.logger.info('Using proxied socket from %s:%s to %s:%s', socketOptions.connection.remoteAddress, socketOptions.connection.remotePort, options.host || '', options.port || '');
+            // only copy options if we need to modify it
+            options = assign(false, options);
+            Object.keys(socketOptions).forEach(function (key) {
+                options[key] = socketOptions[key];
+            });
+        }
+
+        var connection = new SMTPConnection(options);
+        var returned = false;
+
+        connection.once('error', function (err) {
+            if (returned) {
+                return;
+            }
+            returned = true;
+            connection.close();
+            return callback(err);
+        });
+
+        connection.once('end', function () {
+            if (returned) {
+                return;
+            }
+            returned = true;
+            return callback(new Error('Connection closed'));
+        });
+
+        var sendMessage = function () {
+            var envelope = mail.message.getEnvelope();
+            var messageId = (mail.message.getHeader('message-id') || '').replace(/[<>\s]/g, '');
+            var recipients = [].concat(envelope.to || []);
+            if (recipients.length > 3) {
+                recipients.push('...and ' + recipients.splice(2).length + ' more');
+            }
+
+            this.logger.info('Sending message <%s> to <%s>', messageId, recipients.join(', '));
+
+            connection.send(envelope, mail.message.createReadStream(), function (err, info) {
+                if (returned) {
+                    return;
+                }
+                returned = true;
+
+                connection.close();
+                if (err) {
+                    return callback(err);
+                }
+                info.envelope = {
+                    from: envelope.from,
+                    to: envelope.to
+                };
+                info.messageId = messageId;
+                return callback(null, info);
+            });
+        }.bind(this);
+
+        connection.connect(function () {
+            if (returned) {
+                return;
+            }
+
+            if (this.options.auth) {
+                connection.login(this.options.auth, function (err) {
+                    if (returned) {
+                        return;
+                    }
+
+                    if (err) {
+                        returned = true;
+                        connection.close();
+                        return callback(err);
+                    }
+
+                    sendMessage();
+                });
+            } else {
+                sendMessage();
+            }
+        }.bind(this));
+    }.bind(this));
+};
+
+/**
+ * Verifies SMTP configuration
+ *
+ * @param {Function} callback Callback function
+ */
+SMTPTransport.prototype.verify = function (callback) {
+    var promise;
+
+    if (!callback && typeof Promise === 'function') {
+        promise = new Promise(function (resolve, reject) {
+            callback = shared.callbackPromise(resolve, reject);
+        });
+    }
+
+    this.getSocket(this.options, function (err, socketOptions) {
+        if (err) {
+            return callback(err);
+        }
+
+        var options = this.options;
+        if (socketOptions && socketOptions.connection) {
+            this.logger.info('Using proxied socket from %s:%s', socketOptions.connection.remoteAddress, socketOptions.connection.remotePort);
+            options = assign(false, options);
+            Object.keys(socketOptions).forEach(function (key) {
+                options[key] = socketOptions[key];
+            });
+        }
+
+        var connection = new SMTPConnection(options);
+        var returned = false;
+
+        connection.once('error', function (err) {
+            if (returned) {
+                return;
+            }
+            returned = true;
+            connection.close();
+            return callback(err);
+        });
+
+        connection.once('end', function () {
+            if (returned) {
+                return;
+            }
+            returned = true;
+            return callback(new Error('Connection closed'));
+        });
+
+        var finalize = function () {
+            if (returned) {
+                return;
+            }
+            returned = true;
+            connection.quit();
+            return callback(null, true);
+        };
+
+        connection.connect(function () {
+            if (returned) {
+                return;
+            }
+
+            if (this.options.auth) {
+                connection.login(this.options.auth, function (err) {
+                    if (returned) {
+                        return;
+                    }
+
+                    if (err) {
+                        returned = true;
+                        connection.close();
+                        return callback(err);
+                    }
+
+                    finalize();
+                });
+            } else {
+                finalize();
+            }
+        }.bind(this));
+    }.bind(this));
+
+    return promise;
+};
+
+/**
+ * Copies properties from source objects to target objects
+ */
+function assign( /* target, ... sources */ ) {
+    var args = Array.prototype.slice.call(arguments);
+    var target = args.shift() || {};
+
+    args.forEach(function (source) {
+        Object.keys(source || {}).forEach(function (key) {
+            if (['tls', 'auth'].indexOf(key) >= 0 && source[key] && typeof source[key] === 'object') {
+                // tls and auth are special keys that need to be enumerated separately
+                // other objects are passed as is
+                if (!target[key]) {
+                    // esnure that target has this key
+                    target[key] = {};
+                }
+                Object.keys(source[key]).forEach(function (subKey) {
+                    target[key][subKey] = source[key][subKey];
+                });
+            } else {
+                target[key] = source[key];
+            }
+        });
+    });
+    return target;
+}
+
+
+/***/ }),
+/* 31 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var packageInfo = __webpack_require__(32);
+var EventEmitter = __webpack_require__(4).EventEmitter;
+var util = __webpack_require__(6);
+var net = __webpack_require__(7);
+var tls = __webpack_require__(11);
+var os = __webpack_require__(12);
+var crypto = __webpack_require__(3);
+var DataStream = __webpack_require__(33);
+var PassThrough = __webpack_require__(0).PassThrough;
+var shared = __webpack_require__(15);
+var ntlm = __webpack_require__(36);
+
+// default timeout values in ms
+var CONNECTION_TIMEOUT = 2 * 60 * 1000; // how much to wait for the connection to be established
+var SOCKET_TIMEOUT = 10 * 60 * 1000; // how much to wait for socket inactivity before disconnecting the client
+var GREETING_TIMEOUT = 30 * 1000; // how much to wait after connection is established but SMTP greeting is not receieved
+
+module.exports = SMTPConnection;
+
+/**
+ * Generates a SMTP connection object
+ *
+ * Optional options object takes the following possible properties:
+ *
+ *  * **port** - is the port to connect to (defaults to 25 or 465)
+ *  * **host** - is the hostname or IP address to connect to (defaults to 'localhost')
+ *  * **secure** - use SSL
+ *  * **ignoreTLS** - ignore server support for STARTTLS
+ *  * **requireTLS** - forces the client to use STARTTLS
+ *  * **name** - the name of the client server
+ *  * **localAddress** - outbound address to bind to (see: http://nodejs.org/api/net.html#net_net_connect_options_connectionlistener)
+ *  * **greetingTimeout** - Time to wait in ms until greeting message is received from the server (defaults to 10000)
+ *  * **connectionTimeout** - how many milliseconds to wait for the connection to establish
+ *  * **socketTimeout** - Time of inactivity until the connection is closed (defaults to 1 hour)
+ *  * **lmtp** - if true, uses LMTP instead of SMTP protocol
+ *  * **logger** - bunyan compatible logger interface
+ *  * **debug** - if true pass SMTP traffic to the logger
+ *  * **tls** - options for createCredentials
+ *  * **socket** - existing socket to use instead of creating a new one (see: http://nodejs.org/api/net.html#net_class_net_socket)
+ *  * **secured** - boolean indicates that the provided socket has already been upgraded to tls
+ *
+ * @constructor
+ * @namespace SMTP Client module
+ * @param {Object} [options] Option properties
+ */
+function SMTPConnection(options) {
+    EventEmitter.call(this);
+
+    this.id = crypto.randomBytes(8).toString('base64').replace(/\W/g, '');
+    this.stage = 'init';
+
+    this.options = options || {};
+
+    this.secureConnection = !!this.options.secure;
+    this.alreadySecured = !!this.options.secured;
+
+    this.port = this.options.port || (this.secureConnection ? 465 : 25);
+    this.host = this.options.host || 'localhost';
+
+    if (typeof this.options.secure === 'undefined' && this.port === 465) {
+        // if secure option is not set but port is 465, then default to secure
+        this.secureConnection = true;
+    }
+
+    this.name = this.options.name || this._getHostname();
+
+    this.logger = shared.getLogger(this.options);
+
+    /**
+     * Expose version nr, just for the reference
+     * @type {String}
+     */
+    this.version = packageInfo.version;
+
+    /**
+     * If true, then the user is authenticated
+     * @type {Boolean}
+     */
+    this.authenticated = false;
+
+    /**
+     * If set to true, this instance is no longer active
+     * @private
+     */
+    this.destroyed = false;
+
+    /**
+     * Defines if the current connection is secure or not. If not,
+     * STARTTLS can be used if available
+     * @private
+     */
+    this.secure = !!this.secureConnection;
+
+    /**
+     * Store incomplete messages coming from the server
+     * @private
+     */
+    this._remainder = '';
+
+    /**
+     * Unprocessed responses from the server
+     * @type {Array}
+     */
+    this._responseQueue = [];
+
+    /**
+     * The socket connecting to the server
+     * @publick
+     */
+    this._socket = false;
+
+    /**
+     * Lists supported auth mechanisms
+     * @private
+     */
+    this._supportedAuth = [];
+
+    /**
+     * Includes current envelope (from, to)
+     * @private
+     */
+    this._envelope = false;
+
+    /**
+     * Lists supported extensions
+     * @private
+     */
+    this._supportedExtensions = [];
+
+    /**
+     * Defines the maximum allowed size for a single message
+     * @private
+     */
+    this._maxAllowedSize = 0;
+
+    /**
+     * Function queue to run if a data chunk comes from the server
+     * @private
+     */
+    this._responseActions = [];
+    this._recipientQueue = [];
+
+    /**
+     * Timeout variable for waiting the greeting
+     * @private
+     */
+    this._greetingTimeout = false;
+
+    /**
+     * Timeout variable for waiting the connection to start
+     * @private
+     */
+    this._connectionTimeout = false;
+
+    /**
+     * If the socket is deemed already closed
+     * @private
+     */
+    this._destroyed = false;
+
+    /**
+     * If the socket is already being closed
+     * @private
+     */
+    this._closing = false;
+}
+util.inherits(SMTPConnection, EventEmitter);
+
+/**
+ * Creates a connection to a SMTP server and sets up connection
+ * listener
+ */
+SMTPConnection.prototype.connect = function (connectCallback) {
+    if (typeof connectCallback === 'function') {
+        this.once('connect', function () {
+            this.logger.debug('[%s] SMTP handshake finished', this.id);
+            connectCallback();
+        }.bind(this));
+    }
+
+    var opts = {
+        port: this.port,
+        host: this.host
+    };
+
+    if (this.options.localAddress) {
+        opts.localAddress = this.options.localAddress;
+    }
+
+    if (this.options.connection) {
+        // connection is already opened
+        this._socket = this.options.connection;
+        if (this.secureConnection && !this.alreadySecured) {
+            setImmediate(this._upgradeConnection.bind(this, function (err) {
+                if (err) {
+                    this._onError(new Error('Error initiating TLS - ' + (err.message || err)), 'ETLS', false, 'CONN');
+                    return;
+                }
+                this._onConnect();
+            }.bind(this)));
+        } else {
+            setImmediate(this._onConnect.bind(this));
+        }
+    } else if (this.options.socket) {
+        // socket object is set up but not yet connected
+        this._socket = this.options.socket;
+        try {
+            this._socket.connect(this.port, this.host, this._onConnect.bind(this));
+        } catch (E) {
+            return setImmediate(this._onError.bind(this, E, 'ECONNECTION', false, 'CONN'));
+        }
+    } else if (this.secureConnection) {
+        // connect using tls
+        if (this.options.tls) {
+            Object.keys(this.options.tls).forEach(function (key) {
+                opts[key] = this.options.tls[key];
+            }.bind(this));
+        }
+        try {
+            this._socket = tls.connect(this.port, this.host, opts, this._onConnect.bind(this));
+        } catch (E) {
+            return setImmediate(this._onError.bind(this, E, 'ECONNECTION', false, 'CONN'));
+        }
+    } else {
+        // connect using plaintext
+        try {
+            this._socket = net.connect(opts, this._onConnect.bind(this));
+        } catch (E) {
+            return setImmediate(this._onError.bind(this, E, 'ECONNECTION', false, 'CONN'));
+        }
+    }
+
+    this._connectionTimeout = setTimeout(function () {
+        this._onError('Connection timeout', 'ETIMEDOUT', false, 'CONN');
+    }.bind(this), this.options.connectionTimeout || CONNECTION_TIMEOUT);
+
+    this._socket.on('error', function (err) {
+        this._onError(err, 'ECONNECTION', false, 'CONN');
+    }.bind(this));
+};
+
+/**
+ * Sends QUIT
+ */
+SMTPConnection.prototype.quit = function () {
+    this._sendCommand('QUIT');
+    this._responseActions.push(this.close);
+};
+
+/**
+ * Closes the connection to the server
+ */
+SMTPConnection.prototype.close = function () {
+    clearTimeout(this._connectionTimeout);
+    clearTimeout(this._greetingTimeout);
+    this._responseActions = [];
+
+    // allow to run this function only once
+    if (this._closing) {
+        return;
+    }
+    this._closing = true;
+
+    var closeMethod = 'end';
+
+    if (this.stage === 'init') {
+        // Close the socket immediately when connection timed out
+        closeMethod = 'destroy';
+    }
+
+    this.logger.debug('[%s] Closing connection to the server using "%s"', this.id, closeMethod);
+
+    var socket = this._socket && this._socket.socket || this._socket;
+
+    if (socket && !socket.destroyed) {
+        try {
+            this._socket[closeMethod]();
+        } catch (E) {
+            // just ignore
+        }
+    }
+
+    this._destroy();
+};
+
+/**
+ * Authenticate user
+ */
+SMTPConnection.prototype.login = function (authData, callback) {
+    this._auth = authData || {};
+    this._user = this._auth.xoauth2 && this._auth.xoauth2.options && this._auth.xoauth2.options.user || this._auth.user || '';
+
+    this._authMethod = false;
+    if (this.options.authMethod) {
+        this._authMethod = this.options.authMethod.toUpperCase().trim();
+    } else if (this._auth.xoauth2 && this._supportedAuth.indexOf('XOAUTH2') >= 0) {
+        this._authMethod = 'XOAUTH2';
+    } else if (this._auth.domain && this._supportedAuth.indexOf('NTLM') >= 0) {
+        this._authMethod = 'NTLM';
+    } else {
+        // use first supported
+        this._authMethod = (this._supportedAuth[0] || 'PLAIN').toUpperCase().trim();
+    }
+
+    switch (this._authMethod) {
+        case 'XOAUTH2':
+            this._handleXOauth2Token(false, callback);
+            return;
+        case 'LOGIN':
+            this._responseActions.push(function (str) {
+                this._actionAUTH_LOGIN_USER(str, callback);
+            }.bind(this));
+            this._sendCommand('AUTH LOGIN');
+            return;
+        case 'PLAIN':
+            this._responseActions.push(function (str) {
+                this._actionAUTHComplete(str, callback);
+            }.bind(this));
+            this._sendCommand('AUTH PLAIN ' + new Buffer(
+                //this._auth.user+'\u0000'+
+                '\u0000' + // skip authorization identity as it causes problems with some servers
+                this._auth.user + '\u0000' +
+                this._auth.pass, 'utf-8').toString('base64'));
+            return;
+        case 'CRAM-MD5':
+            this._responseActions.push(function (str) {
+                this._actionAUTH_CRAM_MD5(str, callback);
+            }.bind(this));
+            this._sendCommand('AUTH CRAM-MD5');
+            return;
+        case 'NTLM':
+            this._responseActions.push(function (str) {
+                this._actionAUTH_NTLM_TYPE1(str, callback);
+            }.bind(this));
+            this._sendCommand('AUTH ' + ntlm.createType1Message({
+                domain: this._auth.domain || '',
+                workstation: this._auth.workstation || ''
+            }));
+            return;
+    }
+
+    return callback(this._formatError('Unknown authentication method "' + this._authMethod + '"', 'EAUTH', false, 'API'));
+};
+
+/**
+ * Sends a message
+ *
+ * @param {Object} envelope Envelope object, {from: addr, to: [addr]}
+ * @param {Object} message String, Buffer or a Stream
+ * @param {Function} callback Callback to return once sending is completed
+ */
+SMTPConnection.prototype.send = function (envelope, message, done) {
+    if (!message) {
+        return done(this._formatError('Empty message', 'EMESSAGE', false, 'API'));
+    }
+
+    // reject larger messages than allowed
+    if (this._maxAllowedSize && envelope.size > this._maxAllowedSize) {
+        return setImmediate(function () {
+            done(this._formatError('Message size larger than allowed ' + this._maxAllowedSize, 'EMESSAGE', false, 'MAIL FROM'));
+        }.bind(this));
+    }
+
+    // ensure that callback is only called once
+    var returned = false;
+    var callback = function () {
+        if (returned) {
+            return;
+        }
+        returned = true;
+
+        done.apply(null, Array.prototype.slice.call(arguments));
+    };
+
+    if (typeof message.on === 'function') {
+        message.on('error', function (err) {
+            return callback(this._formatError(err, 'ESTREAM', false, 'API'));
+        }.bind(this));
+    }
+
+    this._setEnvelope(envelope, function (err, info) {
+        if (err) {
+            return callback(err);
+        }
+        var stream = this._createSendStream(function (err, str) {
+            if (err) {
+                return callback(err);
+            }
+            info.response = str;
+            return callback(null, info);
+        });
+        if (typeof message.pipe === 'function') {
+            message.pipe(stream);
+        } else {
+            stream.write(message);
+            stream.end();
+        }
+
+    }.bind(this));
+};
+
+/**
+ * Resets connection state
+ *
+ * @param {Function} callback Callback to return once connection is reset
+ */
+SMTPConnection.prototype.reset = function (callback) {
+    this._sendCommand('RSET');
+    this._responseActions.push(function (str) {
+        if (str.charAt(0) !== '2') {
+            return callback(this._formatError('Could not reset session state:\n' + str, 'EPROTOCOL', str, 'RSET'));
+        }
+        this._envelope = false;
+        return callback(null, true);
+    }.bind(this));
+};
+
+/**
+ * Connection listener that is run when the connection to
+ * the server is opened
+ *
+ * @event
+ */
+SMTPConnection.prototype._onConnect = function () {
+    clearTimeout(this._connectionTimeout);
+
+    this.logger.info('[%s] %s established to %s:%s', this.id, this.secure ? 'Secure connection' : 'Connection', this._socket.remoteAddress, this._socket.remotePort);
+
+    if (this._destroyed) {
+        // Connection was established after we already had canceled it
+        this.close();
+        return;
+    }
+
+    this.stage = 'connected';
+
+    // clear existing listeners for the socket
+    this._socket.removeAllListeners('data');
+    this._socket.removeAllListeners('timeout');
+    this._socket.removeAllListeners('close');
+    this._socket.removeAllListeners('end');
+
+    this._socket.on('data', this._onData.bind(this));
+    this._socket.once('close', this._onClose.bind(this));
+    this._socket.once('end', this._onEnd.bind(this));
+
+    this._socket.setTimeout(this.options.socketTimeout || SOCKET_TIMEOUT);
+    this._socket.on('timeout', this._onTimeout.bind(this));
+
+    this._greetingTimeout = setTimeout(function () {
+        // if still waiting for greeting, give up
+        if (this._socket && !this._destroyed && this._responseActions[0] === this._actionGreeting) {
+            this._onError('Greeting never received', 'ETIMEDOUT', false, 'CONN');
+        }
+    }.bind(this), this.options.greetingTimeout || GREETING_TIMEOUT);
+
+    this._responseActions.push(this._actionGreeting);
+
+    // we have a 'data' listener set up so resume socket if it was paused
+    this._socket.resume();
+};
+
+/**
+ * 'data' listener for data coming from the server
+ *
+ * @event
+ * @param {Buffer} chunk Data chunk coming from the server
+ */
+SMTPConnection.prototype._onData = function (chunk) {
+    if (this._destroyed || !chunk || !chunk.length) {
+        return;
+    }
+
+    var data = (chunk || '').toString('binary');
+    var lines = (this._remainder + data).split(/\r?\n/);
+    var lastline;
+
+    this._remainder = lines.pop();
+
+    for (var i = 0, len = lines.length; i < len; i++) {
+        if (this._responseQueue.length) {
+            lastline = this._responseQueue[this._responseQueue.length - 1];
+            if (/^\d+\-/.test(lastline.split('\n').pop())) {
+                this._responseQueue[this._responseQueue.length - 1] += '\n' + lines[i];
+                continue;
+            }
+        }
+        this._responseQueue.push(lines[i]);
+    }
+
+    this._processResponse();
+};
+
+/**
+ * 'error' listener for the socket
+ *
+ * @event
+ * @param {Error} err Error object
+ * @param {String} type Error name
+ */
+SMTPConnection.prototype._onError = function (err, type, data, command) {
+    clearTimeout(this._connectionTimeout);
+    clearTimeout(this._greetingTimeout);
+
+    if (this._destroyed) {
+        // just ignore, already closed
+        // this might happen when a socket is canceled because of reached timeout
+        // but the socket timeout error itself receives only after
+        return;
+    }
+
+    err = this._formatError(err, type, data, command);
+
+    this.logger.error('[%s] %s', this.id, err.message);
+
+    this.emit('error', err);
+    this.close();
+};
+
+SMTPConnection.prototype._formatError = function (message, type, response, command) {
+    var err;
+
+    if (/Error\]$/i.test(Object.prototype.toString.call(message))) {
+        err = message;
+    } else {
+        err = new Error(message);
+    }
+
+    if (type && type !== 'Error') {
+        err.code = type;
+    }
+
+    if (response) {
+        err.response = response;
+        err.message += ': ' + response;
+    }
+
+    var responseCode = typeof response === 'string' && Number((response.match(/^\d+/) || [])[0]) || false;
+    if (responseCode) {
+        err.responseCode = responseCode;
+    }
+
+    if (command) {
+        err.command = command;
+    }
+
+    return err;
+};
+
+/**
+ * 'close' listener for the socket
+ *
+ * @event
+ */
+SMTPConnection.prototype._onClose = function () {
+    this.logger.info('[%s] Connection closed', this.id);
+
+    if ([this._actionGreeting, this.close].indexOf(this._responseActions[0]) < 0 && !this._destroyed) {
+        return this._onError(new Error('Connection closed unexpectedly'), 'ECONNECTION', false, 'CONN');
+    }
+
+    this._destroy();
+};
+
+/**
+ * 'end' listener for the socket
+ *
+ * @event
+ */
+SMTPConnection.prototype._onEnd = function () {
+    this._destroy();
+};
+
+/**
+ * 'timeout' listener for the socket
+ *
+ * @event
+ */
+SMTPConnection.prototype._onTimeout = function () {
+    return this._onError(new Error('Timeout'), 'ETIMEDOUT', false, 'CONN');
+};
+
+/**
+ * Destroys the client, emits 'end'
+ */
+SMTPConnection.prototype._destroy = function () {
+    if (this._destroyed) {
+        return;
+    }
+    this._destroyed = true;
+    this.emit('end');
+};
+
+/**
+ * Upgrades the connection to TLS
+ *
+ * @param {Function} callback Callback function to run when the connection
+ *        has been secured
+ */
+SMTPConnection.prototype._upgradeConnection = function (callback) {
+    // do not remove all listeners or it breaks node v0.10 as there's
+    // apparently a 'finish' event set that would be cleared as well
+
+    // we can safely keep 'error', 'end', 'close' etc. events
+    this._socket.removeAllListeners('data'); // incoming data is going to be gibberish from this point onwards
+    this._socket.removeAllListeners('timeout'); // timeout will be re-set for the new socket object
+
+    var socketPlain = this._socket;
+    var opts = {
+        socket: this._socket,
+        host: this.host
+    };
+
+    Object.keys(this.options.tls || {}).forEach(function (key) {
+        opts[key] = this.options.tls[key];
+    }.bind(this));
+
+    this._socket = tls.connect(opts, function () {
+        this.secure = true;
+        this._socket.on('data', this._onData.bind(this));
+
+        socketPlain.removeAllListeners('close');
+        socketPlain.removeAllListeners('end');
+
+        return callback(null, true);
+    }.bind(this));
+
+    this._socket.on('error', this._onError.bind(this));
+    this._socket.once('close', this._onClose.bind(this));
+    this._socket.once('end', this._onEnd.bind(this));
+
+    this._socket.setTimeout(this.options.socketTimeout || SOCKET_TIMEOUT); // 10 min.
+    this._socket.on('timeout', this._onTimeout.bind(this));
+
+    // resume in case the socket was paused
+    socketPlain.resume();
+};
+
+/**
+ * Processes queued responses from the server
+ *
+ * @param {Boolean} force If true, ignores _processing flag
+ */
+SMTPConnection.prototype._processResponse = function () {
+    if (!this._responseQueue.length) {
+        return false;
+    }
+
+    var str = (this._responseQueue.shift() || '').toString();
+
+    if (/^\d+\-/.test(str.split('\n').pop())) {
+        // keep waiting for the final part of multiline response
+        return;
+    }
+
+    if (this.options.debug) {
+        this.logger.debug('[%s] S: %s', this.id, str.replace(/\r?\n$/, ''));
+    }
+
+    if (!str.trim()) { // skip unexpected empty lines
+        setImmediate(this._processResponse.bind(this, true));
+    }
+
+    var action = this._responseActions.shift();
+
+    if (typeof action === 'function') {
+        action.call(this, str);
+        setImmediate(this._processResponse.bind(this, true));
+    } else {
+        return this._onError(new Error('Unexpected Response'), 'EPROTOCOL', str, 'CONN');
+    }
+};
+
+/**
+ * Send a command to the server, append \r\n
+ *
+ * @param {String} str String to be sent to the server
+ */
+SMTPConnection.prototype._sendCommand = function (str) {
+    if (this._destroyed) {
+        // Connection already closed, can't send any more data
+        return;
+    }
+
+    if (this._socket.destroyed) {
+        return this.close();
+    }
+
+    if (this.options.debug) {
+        this.logger.debug('[%s] C: %s', this.id, (str || '').toString().replace(/\r?\n$/, ''));
+    }
+
+    this._socket.write(new Buffer(str + '\r\n', 'utf-8'));
+};
+
+/**
+ * Initiates a new message by submitting envelope data, starting with
+ * MAIL FROM: command
+ *
+ * @param {Object} envelope Envelope object in the form of
+ *        {from:'...', to:['...']}
+ *        or
+ *        {from:{address:'...',name:'...'}, to:[address:'...',name:'...']}
+ */
+SMTPConnection.prototype._setEnvelope = function (envelope, callback) {
+    var args = [];
+    var useSmtpUtf8 = false;
+
+    this._envelope = envelope || {};
+    this._envelope.from = (this._envelope.from && this._envelope.from.address || this._envelope.from || '').toString().trim();
+
+    this._envelope.to = [].concat(this._envelope.to || []).map(function (to) {
+        return (to && to.address || to || '').toString().trim();
+    });
+
+    if (!this._envelope.to.length) {
+        return callback(this._formatError('No recipients defined', 'EENVELOPE', false, 'API'));
+    }
+
+    if (this._envelope.from && /[\r\n<>]/.test(this._envelope.from)) {
+        return callback(this._formatError('Invalid sender ' + JSON.stringify(this._envelope.from), 'EENVELOPE', false, 'API'));
+    }
+
+    // check if the sender address uses only ASCII characters,
+    // otherwise require usage of SMTPUTF8 extension
+    if (/[\x80-\uFFFF]/.test(this._envelope.from)) {
+        useSmtpUtf8 = true;
+    }
+
+    for (var i = 0, len = this._envelope.to.length; i < len; i++) {
+        if (!this._envelope.to[i] || /[\r\n<>]/.test(this._envelope.to[i])) {
+            return callback(this._formatError('Invalid recipient ' + JSON.stringify(this._envelope.to[i]), 'EENVELOPE', false, 'API'));
+        }
+
+        // check if the recipients addresses use only ASCII characters,
+        // otherwise require usage of SMTPUTF8 extension
+        if (/[\x80-\uFFFF]/.test(this._envelope.to[i])) {
+            useSmtpUtf8 = true;
+        }
+    }
+
+    // clone the recipients array for latter manipulation
+    this._envelope.rcptQueue = JSON.parse(JSON.stringify(this._envelope.to || []));
+    this._envelope.rejected = [];
+    this._envelope.rejectedErrors = [];
+    this._envelope.accepted = [];
+
+    if (this._envelope.dsn) {
+        try {
+            this._envelope.dsn = this._setDsnEnvelope(this._envelope.dsn);
+        } catch (err) {
+            return callback(this._formatError('Invalid dsn ' + err.message, 'EENVELOPE', false, 'API'));
+        }
+    }
+
+    this._responseActions.push(function (str) {
+        this._actionMAIL(str, callback);
+    }.bind(this));
+
+    // If the server supports SMTPUTF8 and the envelope includes an internationalized
+    // email address then append SMTPUTF8 keyword to the MAIL FROM command
+    if (useSmtpUtf8 && this._supportedExtensions.indexOf('SMTPUTF8') >= 0) {
+        args.push('SMTPUTF8');
+        this._usingSmtpUtf8 = true;
+    }
+
+    // If the server supports 8BITMIME and the message might contain non-ascii bytes
+    // then append the 8BITMIME keyword to the MAIL FROM command
+    if (this._envelope.use8BitMime && this._supportedExtensions.indexOf('8BITMIME') >= 0) {
+        args.push('BODY=8BITMIME');
+        this._using8BitMime = true;
+    }
+
+    if (this._envelope.size && this._supportedExtensions.indexOf('SIZE') >= 0) {
+        args.push('SIZE=' + this._envelope.size);
+    }
+
+    // If the server supports DSN and the envelope includes an DSN prop
+    // then append DSN params to the MAIL FROM command
+    if (this._envelope.dsn && this._supportedExtensions.indexOf('DSN') >= 0) {
+        if (this._envelope.dsn.ret) {
+            args.push('RET=' + this._envelope.dsn.ret);
+        }
+        if (this._envelope.dsn.envid) {
+            args.push('ENVID=' + this._envelope.dsn.envid);
+        }
+    }
+
+    this._sendCommand('MAIL FROM:<' + (this._envelope.from) + '>' + (args.length ? ' ' + args.join(' ') : ''));
+};
+
+SMTPConnection.prototype._setDsnEnvelope = function (params) {
+    var ret = params.ret ? params.ret.toString().toUpperCase() : null;
+    if (ret && ['FULL', 'HDRS'].indexOf(ret) < 0) {
+        throw new Error('ret: ' + JSON.stringify(ret));
+    }
+    var envid = params.envid ? params.envid.toString() : null;
+    var notify = params.notify ? params.notify : null;
+    if (notify) {
+        if (typeof notify === 'string') {
+            notify = notify.split(',');
+        }
+        notify = notify.map(function (n) {
+            return n.trim().toUpperCase();
+        });
+        var validNotify = ['NEVER', 'SUCCESS', 'FAILURE', 'DELAY'];
+        var invaliNotify = notify.filter(function (n) {
+            return validNotify.indexOf(n) === -1;
+        });
+        if (invaliNotify.length || (notify.length > 1 && notify.indexOf('NEVER') >= 0)) {
+            throw new Error('notify: ' + JSON.stringify(notify.join(',')));
+        }
+        notify = notify.join(',');
+    }
+    var orcpt = params.orcpt ? params.orcpt.toString() : null;
+    return {
+        ret: ret,
+        envid: envid,
+        notify: notify,
+        orcpt: orcpt
+    };
+};
+
+SMTPConnection.prototype._getDsnRcptToArgs = function () {
+    var args = [];
+    // If the server supports DSN and the envelope includes an DSN prop
+    // then append DSN params to the RCPT TO command
+    if (this._envelope.dsn && this._supportedExtensions.indexOf('DSN') >= 0) {
+        if (this._envelope.dsn.notify) {
+            args.push('NOTIFY=' + this._envelope.dsn.notify);
+        }
+        if (this._envelope.dsn.orcpt) {
+            args.push('ORCPT=' + this._envelope.dsn.orcpt);
+        }
+    }
+    return (args.length ? ' ' + args.join(' ') : '');
+};
+
+SMTPConnection.prototype._createSendStream = function (callback) {
+    var dataStream = new DataStream();
+    var logStream;
+
+    if (this.options.lmtp) {
+        this._envelope.accepted.forEach(function (recipient, i) {
+            var final = i === this._envelope.accepted.length - 1;
+            this._responseActions.push(function (str) {
+                this._actionLMTPStream(recipient, final, str, callback);
+            }.bind(this));
+        }.bind(this));
+    } else {
+        this._responseActions.push(function (str) {
+            this._actionSMTPStream(str, callback);
+        }.bind(this));
+    }
+
+    dataStream.pipe(this._socket, {
+        end: false
+    });
+
+    if (this.options.debug) {
+        logStream = new PassThrough();
+        logStream.on('readable', function () {
+            var chunk;
+            while ((chunk = logStream.read())) {
+                this.logger.debug('[%s] C: %s', this.id, chunk.toString('binary').replace(/\r?\n$/, ''));
+            }
+        }.bind(this));
+        dataStream.pipe(logStream);
+    }
+
+    dataStream.once('end', function () {
+        this.logger.info('[%s] C: <%s bytes encoded mime message (source size %s bytes)>', this.id, dataStream.outByteCount, dataStream.inByteCount);
+    }.bind(this));
+
+    return dataStream;
+};
+
+/** ACTIONS **/
+
+/**
+ * Will be run after the connection is created and the server sends
+ * a greeting. If the incoming message starts with 220 initiate
+ * SMTP session by sending EHLO command
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionGreeting = function (str) {
+    clearTimeout(this._greetingTimeout);
+
+    if (str.substr(0, 3) !== '220') {
+        this._onError(new Error('Invalid greeting from server:\n' + str), 'EPROTOCOL', str, 'CONN');
+        return;
+    }
+
+    if (this.options.lmtp) {
+        this._responseActions.push(this._actionLHLO);
+        this._sendCommand('LHLO ' + this.name);
+    } else {
+        this._responseActions.push(this._actionEHLO);
+        this._sendCommand('EHLO ' + this.name);
+    }
+};
+
+/**
+ * Handles server response for LHLO command. If it yielded in
+ * error, emit 'error', otherwise treat this as an EHLO response
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionLHLO = function (str) {
+    if (str.charAt(0) !== '2') {
+        this._onError(new Error('Invalid response for LHLO:\n' + str), 'EPROTOCOL', str, 'LHLO');
+        return;
+    }
+
+    this._actionEHLO(str);
+};
+
+/**
+ * Handles server response for EHLO command. If it yielded in
+ * error, try HELO instead, otherwise initiate TLS negotiation
+ * if STARTTLS is supported by the server or move into the
+ * authentication phase.
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionEHLO = function (str) {
+    var match;
+
+    if (str.substr(0, 3) === '421') {
+        this._onError(new Error('Server terminates connection:\n' + str), 'ECONNECTION', str, 'EHLO');
+        return;
+    }
+
+    if (str.charAt(0) !== '2') {
+        if (this.options.requireTLS) {
+            this._onError(new Error('EHLO failed but HELO does not support required STARTTLS:\n' + str), 'ECONNECTION', str, 'EHLO');
+            return;
+        }
+
+        // Try HELO instead
+        this._responseActions.push(this._actionHELO);
+        this._sendCommand('HELO ' + this.name);
+        return;
+    }
+
+    // Detect if the server supports STARTTLS
+    if (!this.secure && !this.options.ignoreTLS && (/[ \-]STARTTLS\b/mi.test(str) || this.options.requireTLS)) {
+        this._sendCommand('STARTTLS');
+        this._responseActions.push(this._actionSTARTTLS);
+        return;
+    }
+
+    // Detect if the server supports SMTPUTF8
+    if (/[ \-]SMTPUTF8\b/mi.test(str)) {
+        this._supportedExtensions.push('SMTPUTF8');
+    }
+
+    // Detect if the server supports DSN
+    if (/[ \-]DSN\b/mi.test(str)) {
+        this._supportedExtensions.push('DSN');
+    }
+
+    // Detect if the server supports 8BITMIME
+    if (/[ \-]8BITMIME\b/mi.test(str)) {
+        this._supportedExtensions.push('8BITMIME');
+    }
+
+    // Detect if the server supports PIPELINING
+    if (/[ \-]PIPELINING\b/mi.test(str)) {
+        this._supportedExtensions.push('PIPELINING');
+    }
+
+    // Detect if the server supports PLAIN auth
+    if (/AUTH(?:(\s+|=)[^\n]*\s+|\s+|=)PLAIN/i.test(str)) {
+        this._supportedAuth.push('PLAIN');
+    }
+
+    // Detect if the server supports LOGIN auth
+    if (/AUTH(?:(\s+|=)[^\n]*\s+|\s+|=)LOGIN/i.test(str)) {
+        this._supportedAuth.push('LOGIN');
+    }
+
+    // Detect if the server supports CRAM-MD5 auth
+    if (/AUTH(?:(\s+|=)[^\n]*\s+|\s+|=)CRAM-MD5/i.test(str)) {
+        this._supportedAuth.push('CRAM-MD5');
+    }
+
+    // Detect if the server supports XOAUTH2 auth
+    if (/AUTH(?:(\s+|=)[^\n]*\s+|\s+|=)XOAUTH2/i.test(str)) {
+        this._supportedAuth.push('XOAUTH2');
+    }
+
+    // Detect if the server supports SIZE extensions (and the max allowed size)
+    if ((match = str.match(/[ \-]SIZE(?:\s+(\d+))?/mi))) {
+        this._supportedExtensions.push('SIZE');
+        this._maxAllowedSize = Number(match[1]) || 0;
+    }
+
+    this.emit('connect');
+};
+
+/**
+ * Handles server response for HELO command. If it yielded in
+ * error, emit 'error', otherwise move into the authentication phase.
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionHELO = function (str) {
+    if (str.charAt(0) !== '2') {
+        this._onError(new Error('Invalid response for EHLO/HELO:\n' + str), 'EPROTOCOL', str, 'HELO');
+        return;
+    }
+
+    this.emit('connect');
+};
+
+/**
+ * Handles server response for STARTTLS command. If there's an error
+ * try HELO instead, otherwise initiate TLS upgrade. If the upgrade
+ * succeedes restart the EHLO
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionSTARTTLS = function (str) {
+    if (str.charAt(0) !== '2') {
+        if (this.options.opportunisticTLS) {
+            this.logger.info('[%s] Failed STARTTLS upgrade, continuing unencrypted', this.id);
+            return this.emit('connect');
+        }
+        this._onError(new Error('Error upgrading connection with STARTTLS'), 'ETLS', str, 'STARTTLS');
+        return;
+    }
+
+    this._upgradeConnection(function (err, secured) {
+        if (err) {
+            this._onError(new Error('Error initiating TLS - ' + (err.message || err)), 'ETLS', false, 'STARTTLS');
+            return;
+        }
+
+        this.logger.info('[%s] Connection upgraded with STARTTLS', this.id);
+
+        if (secured) {
+            // restart session
+            this._responseActions.push(this._actionEHLO);
+            this._sendCommand('EHLO ' + this.name);
+        } else {
+            this.emit('connect');
+        }
+    }.bind(this));
+};
+
+/**
+ * Handle the response for AUTH LOGIN command. We are expecting
+ * '334 VXNlcm5hbWU6' (base64 for 'Username:'). Data to be sent as
+ * response needs to be base64 encoded username.
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionAUTH_LOGIN_USER = function (str, callback) {
+    if (str !== '334 VXNlcm5hbWU6') {
+        callback(this._formatError('Invalid login sequence while waiting for "334 VXNlcm5hbWU6"', 'EAUTH', str, 'AUTH LOGIN'));
+        return;
+    }
+
+    this._responseActions.push(function (str) {
+        this._actionAUTH_LOGIN_PASS(str, callback);
+    }.bind(this));
+
+    this._sendCommand(new Buffer(this._auth.user + '', 'utf-8').toString('base64'));
+};
+
+/**
+ * Handle the response for AUTH NTLM, which should be a
+ * '334 <challenge string>'. See http://davenport.sourceforge.net/ntlm.html
+ * We already sent the Type1 message, the challenge is a Type2 message, we
+ * need to respond with a Type3 message.
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionAUTH_NTLM_TYPE1 = function (str, callback) {
+    var challengeMatch = str.match(/^334\s+(.+)$/);
+    var challengeString = '';
+
+    if (!challengeMatch) {
+        return callback(this._formatError('Invalid login sequence while waiting for server challenge string', 'EAUTH', str, 'AUTH NTLM'));
+    } else {
+        challengeString = challengeMatch[1];
+    }
+
+    if (!/^NTLM/i.test(challengeString)) {
+        challengeString = 'NTLM ' + challengeString;
+    }
+
+    var type2Message = ntlm.parseType2Message(challengeString, callback);
+    if (!type2Message) {
+        return;
+    }
+
+    var type3Message = ntlm.createType3Message(type2Message, {
+        domain: this._auth.domain || '',
+        workstation: this._auth.workstation || '',
+        username: this._auth.user,
+        password: this._auth.pass
+    });
+
+    type3Message = type3Message.substring(5); // remove the "NTLM " prefix
+
+    this._responseActions.push(function (str) {
+        this._actionAUTH_NTLM_TYPE3(str, callback);
+    }.bind(this));
+
+    this._sendCommand(type3Message);
+};
+
+/**
+ * Handle the response for AUTH CRAM-MD5 command. We are expecting
+ * '334 <challenge string>'. Data to be sent as response needs to be
+ * base64 decoded challenge string, MD5 hashed using the password as
+ * a HMAC key, prefixed by the username and a space, and finally all
+ * base64 encoded again.
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionAUTH_CRAM_MD5 = function (str, callback) {
+    var challengeMatch = str.match(/^334\s+(.+)$/);
+    var challengeString = '';
+
+    if (!challengeMatch) {
+        return callback(this._formatError('Invalid login sequence while waiting for server challenge string', 'EAUTH', str, 'AUTH CRAM-MD5'));
+    } else {
+        challengeString = challengeMatch[1];
+    }
+
+    // Decode from base64
+    var base64decoded = new Buffer(challengeString, 'base64').toString('ascii'),
+        hmac_md5 = crypto.createHmac('md5', this._auth.pass);
+
+    hmac_md5.update(base64decoded);
+
+    var hex_hmac = hmac_md5.digest('hex'),
+        prepended = this._auth.user + ' ' + hex_hmac;
+
+    this._responseActions.push(function (str) {
+        this._actionAUTH_CRAM_MD5_PASS(str, callback);
+    }.bind(this));
+
+
+    this._sendCommand(new Buffer(prepended).toString('base64'));
+};
+
+/**
+ * Handles the response to CRAM-MD5 authentication, if there's no error,
+ * the user can be considered logged in. Start waiting for a message to send
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionAUTH_CRAM_MD5_PASS = function (str, callback) {
+    if (!str.match(/^235\s+/)) {
+        return callback(this._formatError('Invalid login sequence while waiting for "235"', 'EAUTH', str, 'AUTH CRAM-MD5'));
+    }
+
+    this.logger.info('[%s] User %s authenticated', this.id, JSON.stringify(this._user));
+    this.authenticated = true;
+    callback(null, true);
+};
+
+/**
+ * Handles the TYPE3 response for NTLM authentication, if there's no error,
+ * the user can be considered logged in. Start waiting for a message to send
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionAUTH_NTLM_TYPE3 = function (str, callback) {
+    if (!str.match(/^235\s+/)) {
+        return callback(this._formatError('Invalid login sequence while waiting for "235"', 'EAUTH', str, 'AUTH NTLM'));
+    }
+
+    this.logger.info('[%s] User %s authenticated', this.id, JSON.stringify(this._user));
+    this.authenticated = true;
+    callback(null, true);
+};
+
+/**
+ * Handle the response for AUTH LOGIN command. We are expecting
+ * '334 UGFzc3dvcmQ6' (base64 for 'Password:'). Data to be sent as
+ * response needs to be base64 encoded password.
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionAUTH_LOGIN_PASS = function (str, callback) {
+    if (str !== '334 UGFzc3dvcmQ6') {
+        return callback(this._formatError('Invalid login sequence while waiting for "334 UGFzc3dvcmQ6"', 'EAUTH', str, 'AUTH LOGIN'));
+    }
+
+    this._responseActions.push(function (str) {
+        this._actionAUTHComplete(str, callback);
+    }.bind(this));
+
+    this._sendCommand(new Buffer(this._auth.pass + '', 'utf-8').toString('base64'));
+};
+
+/**
+ * Handles the response for authentication, if there's no error,
+ * the user can be considered logged in. Start waiting for a message to send
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionAUTHComplete = function (str, isRetry, callback) {
+    if (!callback && typeof isRetry === 'function') {
+        callback = isRetry;
+        isRetry = undefined;
+    }
+
+    if (str.substr(0, 3) === '334') {
+        this._responseActions.push(function (str) {
+            if (isRetry || !this._auth.xoauth2 || typeof this._auth.xoauth2 !== 'object') {
+                this._actionAUTHComplete(str, true, callback);
+            } else {
+                setTimeout(this._handleXOauth2Token.bind(this, true, callback), Math.random() * 4000 + 1000);
+            }
+        }.bind(this));
+        this._sendCommand('');
+        return;
+    }
+
+    if (str.charAt(0) !== '2') {
+        this.logger.info('[%s] User %s failed to authenticate', this.id, JSON.stringify(this._user));
+        return callback(this._formatError('Invalid login', 'EAUTH', str, 'AUTH ' + this._authMethod));
+    }
+
+    this.logger.info('[%s] User %s authenticated', this.id, JSON.stringify(this._user));
+    this.authenticated = true;
+    callback(null, true);
+};
+
+/**
+ * Handle response for a MAIL FROM: command
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionMAIL = function (str, callback) {
+    var message, curRecipient;
+    if (Number(str.charAt(0)) !== 2) {
+        if (this._usingSmtpUtf8 && /^550 /.test(str) && /[\x80-\uFFFF]/.test(this._envelope.from)) {
+            message = 'Internationalized mailbox name not allowed';
+        } else {
+            message = 'Mail command failed';
+        }
+        return callback(this._formatError(message, 'EENVELOPE', str, 'MAIL FROM'));
+    }
+
+    if (!this._envelope.rcptQueue.length) {
+        return callback(this._formatError('Can\'t send mail - no recipients defined', 'EENVELOPE', false, 'API'));
+    } else {
+        this._recipientQueue = [];
+
+        if (this._supportedExtensions.indexOf('PIPELINING') >= 0) {
+            while (this._envelope.rcptQueue.length) {
+                curRecipient = this._envelope.rcptQueue.shift();
+                this._recipientQueue.push(curRecipient);
+                this._responseActions.push(function (str) {
+                    this._actionRCPT(str, callback);
+                }.bind(this));
+                this._sendCommand('RCPT TO:<' + curRecipient + '>' + this._getDsnRcptToArgs());
+            }
+        } else {
+            curRecipient = this._envelope.rcptQueue.shift();
+            this._recipientQueue.push(curRecipient);
+            this._responseActions.push(function (str) {
+                this._actionRCPT(str, callback);
+            }.bind(this));
+            this._sendCommand('RCPT TO:<' + curRecipient + '>' + this._getDsnRcptToArgs());
+        }
+    }
+};
+
+/**
+ * Handle response for a RCPT TO: command
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionRCPT = function (str, callback) {
+    var message, err, curRecipient = this._recipientQueue.shift();
+    if (Number(str.charAt(0)) !== 2) {
+        // this is a soft error
+        if (this._usingSmtpUtf8 && /^553 /.test(str) && /[\x80-\uFFFF]/.test(curRecipient)) {
+            message = 'Internationalized mailbox name not allowed';
+        } else {
+            message = 'Recipient command failed';
+        }
+        this._envelope.rejected.push(curRecipient);
+        // store error for the failed recipient
+        err = this._formatError(message, 'EENVELOPE', str, 'RCPT TO');
+        err.recipient = curRecipient;
+        this._envelope.rejectedErrors.push(err);
+    } else {
+        this._envelope.accepted.push(curRecipient);
+    }
+
+    if (!this._envelope.rcptQueue.length && !this._recipientQueue.length) {
+        if (this._envelope.rejected.length < this._envelope.to.length) {
+            this._responseActions.push(function (str) {
+                this._actionDATA(str, callback);
+            }.bind(this));
+            this._sendCommand('DATA');
+        } else {
+            err = this._formatError('Can\'t send mail - all recipients were rejected', 'EENVELOPE', str, 'RCPT TO');
+            err.rejected = this._envelope.rejected;
+            err.rejectedErrors = this._envelope.rejectedErrors;
+            return callback(err);
+        }
+    } else if (this._envelope.rcptQueue.length) {
+        curRecipient = this._envelope.rcptQueue.shift();
+        this._recipientQueue.push(curRecipient);
+        this._responseActions.push(function (str) {
+            this._actionRCPT(str, callback);
+        }.bind(this));
+        this._sendCommand('RCPT TO:<' + curRecipient + '>' + this._getDsnRcptToArgs());
+    }
+};
+
+/**
+ * Handle response for a DATA command
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionDATA = function (str, callback) {
+    // response should be 354 but according to this issue https://github.com/eleith/emailjs/issues/24
+    // some servers might use 250 instead, so lets check for 2 or 3 as the first digit
+    if ([2, 3].indexOf(Number(str.charAt(0))) < 0) {
+        return callback(this._formatError('Data command failed', 'EENVELOPE', str, 'DATA'));
+    }
+
+    var response = {
+        accepted: this._envelope.accepted,
+        rejected: this._envelope.rejected
+    };
+
+    if (this._envelope.rejectedErrors.length) {
+        response.rejectedErrors = this._envelope.rejectedErrors;
+    }
+
+    callback(null, response);
+};
+
+/**
+ * Handle response for a DATA stream when using SMTP
+ * We expect a single response that defines if the sending succeeded or failed
+ *
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionSMTPStream = function (str, callback) {
+    if (Number(str.charAt(0)) !== 2) {
+        // Message failed
+        return callback(this._formatError('Message failed', 'EMESSAGE', str, 'DATA'));
+    } else {
+        // Message sent succesfully
+        return callback(null, str);
+    }
+};
+
+/**
+ * Handle response for a DATA stream
+ * We expect a separate response for every recipient. All recipients can either
+ * succeed or fail separately
+ *
+ * @param {String} recipient The recipient this response applies to
+ * @param {Boolean} final Is this the final recipient?
+ * @param {String} str Message from the server
+ */
+SMTPConnection.prototype._actionLMTPStream = function (recipient, final, str, callback) {
+    var err;
+    if (Number(str.charAt(0)) !== 2) {
+        // Message failed
+        err = this._formatError('Message failed for recipient ' + recipient, 'EMESSAGE', str, 'DATA');
+        err.recipient = recipient;
+        this._envelope.rejected.push(recipient);
+        this._envelope.rejectedErrors.push(err);
+        for (var i = 0, len = this._envelope.accepted.length; i < len; i++) {
+            if (this._envelope.accepted[i] === recipient) {
+                this._envelope.accepted.splice(i, 1);
+            }
+        }
+    }
+    if (final) {
+        return callback(null, str);
+    }
+};
+
+SMTPConnection.prototype._handleXOauth2Token = function (isRetry, callback) {
+    this._responseActions.push(function (str) {
+        this._actionAUTHComplete(str, isRetry, callback);
+    }.bind(this));
+
+    if (this._auth.xoauth2 && typeof this._auth.xoauth2 === 'object') {
+        this._auth.xoauth2[isRetry ? 'generateToken' : 'getToken'](function (err, token) {
+            if (err) {
+                this.logger.info('[%s] User %s failed to authenticate', this.id, JSON.stringify(this._user));
+                return callback(this._formatError(err, 'EAUTH', false, 'AUTH XOAUTH2'));
+            }
+            this._sendCommand('AUTH XOAUTH2 ' + token);
+        }.bind(this));
+    } else {
+        this._sendCommand('AUTH XOAUTH2 ' + this._buildXOAuth2Token(this._auth.user, this._auth.xoauth2));
+    }
+};
+
+/**
+ * Builds a login token for XOAUTH2 authentication command
+ *
+ * @param {String} user E-mail address of the user
+ * @param {String} token Valid access token for the user
+ * @return {String} Base64 formatted login token
+ */
+SMTPConnection.prototype._buildXOAuth2Token = function (user, token) {
+    var authData = [
+        'user=' + (user || ''),
+        'auth=Bearer ' + token,
+        '',
+        ''
+    ];
+    return new Buffer(authData.join('\x01')).toString('base64');
+};
+
+SMTPConnection.prototype._getHostname = function () {
+    // defaul hostname is machine hostname or [IP]
+    var defaultHostname = os.hostname() || '';
+
+    // ignore if not FQDN
+    if (defaultHostname.indexOf('.') < 0) {
+        defaultHostname = '[127.0.0.1]';
+    }
+
+    // IP should be enclosed in []
+    if (defaultHostname.match(/^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/)) {
+        defaultHostname = '[' + defaultHostname + ']';
+    }
+
+    return defaultHostname;
+};
+
+
+/***/ }),
+/* 32 */
+/***/ (function(module, exports) {
+
+module.exports = {"name":"smtp-connection","version":"2.12.0","description":"Connect to SMTP servers","main":"lib/smtp-connection.js","directories":{"test":"test"},"scripts":{"test":"grunt mochaTest"},"repository":{"type":"git","url":"git://github.com/andris9/smtp-connection.git"},"keywords":["SMTP"],"author":"Andris Reinman","license":"MIT","bugs":{"url":"https://github.com/andris9/smtp-connection/issues"},"homepage":"https://github.com/andris9/smtp-connection","devDependencies":{"chai":"^3.5.0","grunt":"^1.0.1","grunt-cli":"^1.2.0","grunt-eslint":"^19.0.0","grunt-mocha-test":"^0.12.7","mocha":"^3.0.2","proxy-test-server":"^1.0.0","sinon":"^1.17.5","smtp-server":"^1.14.2","xoauth2":"^1.2.0"},"dependencies":{"httpntlm":"1.6.1","nodemailer-shared":"1.1.0"}}
+
+/***/ }),
+/* 33 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var stream = __webpack_require__(0);
+var Transform = stream.Transform;
+var util = __webpack_require__(6);
+
+module.exports = DataStream;
+
+/**
+ * Escapes dots in the beginning of lines. Ends the stream with <CR><LF>.<CR><LF>
+ * Also makes sure that only <CR><LF> sequences are used for linebreaks
+ *
+ * @param {Object} options Stream options
+ */
+function DataStream(options) {
+    // init Transform
+    this.options = options || {};
+    this._curLine = '';
+
+    this.inByteCount = 0;
+    this.outByteCount = 0;
+    this.lastByte = false;
+
+    Transform.call(this, this.options);
+}
+util.inherits(DataStream, Transform);
+
+/**
+ * Escapes dots
+ */
+DataStream.prototype._transform = function (chunk, encoding, done) {
+    var chunks = [];
+    var chunklen = 0;
+    var i, len, lastPos = 0;
+    var buf;
+
+    if (!chunk || !chunk.length) {
+        return done();
+    }
+
+    if (typeof chunk === 'string') {
+        chunk = new Buffer(chunk);
+    }
+
+    this.inByteCount += chunk.length;
+
+    for (i = 0, len = chunk.length; i < len; i++) {
+        if (chunk[i] === 0x2E) { // .
+            if (
+                (i && chunk[i - 1] === 0x0A) ||
+                (!i && (!this.lastByte || this.lastByte === 0x0A))
+            ) {
+                buf = chunk.slice(lastPos, i + 1);
+                chunks.push(buf);
+                chunks.push(new Buffer('.'));
+                chunklen += buf.length + 1;
+                lastPos = i + 1;
+            }
+        } else if (chunk[i] === 0x0A) { // .
+            if (
+                (i && chunk[i - 1] !== 0x0D) ||
+                (!i && this.lastByte !== 0x0D)
+            ) {
+                if (i > lastPos) {
+                    buf = chunk.slice(lastPos, i);
+                    chunks.push(buf);
+                    chunklen += buf.length + 2;
+                } else {
+                    chunklen += 2;
+                }
+                chunks.push(new Buffer('\r\n'));
+                lastPos = i + 1;
+            }
+        }
+    }
+
+    if (chunklen) {
+        // add last piece
+        if (lastPos < chunk.length) {
+            buf = chunk.slice(lastPos);
+            chunks.push(buf);
+            chunklen += buf.length;
+        }
+
+        this.outByteCount += chunklen;
+        this.push(Buffer.concat(chunks, chunklen));
+    } else {
+        this.outByteCount += chunk.length;
+        this.push(chunk);
+    }
+
+    this.lastByte = chunk[chunk.length - 1];
+    done();
+};
+
+/**
+ * Finalizes the stream with a dot on a single line
+ */
+DataStream.prototype._flush = function (done) {
+    var buf;
+    if (this.lastByte === 0x0A) {
+        buf = new Buffer('.\r\n');
+    } else if (this.lastByte === 0x0D) {
+        buf = new Buffer('\n.\r\n');
+    } else {
+        buf = new Buffer('\r\n.\r\n');
+    }
+    this.outByteCount += buf.length;
+    this.push(buf);
+    done();
+};
+
+
+/***/ }),
+/* 34 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var http = __webpack_require__(16);
+var https = __webpack_require__(17);
+var urllib = __webpack_require__(5);
+var zlib = __webpack_require__(18);
+var PassThrough = __webpack_require__(0).PassThrough;
+var Cookies = __webpack_require__(35);
+
+var MAX_REDIRECTS = 5;
+
+module.exports = function (url, options) {
+    return fetch(url, options);
+};
+
+module.exports.Cookies = Cookies;
+
+function fetch(url, options) {
+    options = options || {};
+
+    options.fetchRes = options.fetchRes || new PassThrough();
+    options.cookies = options.cookies || new Cookies();
+    options.redirects = options.redirects || 0;
+    options.maxRedirects = isNaN(options.maxRedirects) ? MAX_REDIRECTS : options.maxRedirects;
+
+    if (options.cookie) {
+        [].concat(options.cookie || []).forEach(function (cookie) {
+            options.cookies.set(cookie, url);
+        });
+        options.cookie = false;
+    }
+
+    var fetchRes = options.fetchRes;
+    var parsed = urllib.parse(url);
+    var method = (options.method || '').toString().trim().toUpperCase() || 'GET';
+    var finished = false;
+    var cookies;
+    var body;
+
+    var handler = parsed.protocol === 'https:' ? https : http;
+
+    var headers = {
+        'accept-encoding': 'gzip,deflate'
+    };
+
+    Object.keys(options.headers || {}).forEach(function (key) {
+        headers[key.toLowerCase().trim()] = options.headers[key];
+    });
+
+    if (options.userAgent) {
+        headers['User-Agent'] = options.userAgent;
+    }
+
+    if (parsed.auth) {
+        headers.Authorization = 'Basic ' + new Buffer(parsed.auth).toString('base64');
+    }
+
+    if ((cookies = options.cookies.get(url))) {
+        headers.cookie = cookies;
+    }
+
+    if (options.body) {
+        if (options.contentType !== false) {
+            headers['Content-Type'] = options.contentType || 'application/x-www-form-urlencoded';
+        }
+
+        if (typeof options.body.pipe === 'function') {
+            // it's a stream
+            headers['Transfer-Encoding'] = 'chunked';
+            body = options.body;
+            body.on('error', function (err) {
+                if (finished) {
+                    return;
+                }
+                finished = true;
+                fetchRes.emit('error', err);
+            });
+        } else {
+            if (options.body instanceof Buffer) {
+                body = options.body;
+            } else if (typeof options.body === 'object') {
+                body = new Buffer(Object.keys(options.body).map(function (key) {
+                    var value = options.body[key].toString().trim();
+                    return encodeURIComponent(key) + '=' + encodeURIComponent(value);
+                }).join('&'));
+            } else {
+                body = new Buffer(options.body.toString().trim());
+            }
+
+            headers['Content-Type'] = options.contentType || 'application/x-www-form-urlencoded';
+            headers['Content-Length'] = body.length;
+        }
+        // if method is not provided, use POST instead of GET
+        method = (options.method || '').toString().trim().toUpperCase() || 'POST';
+    }
+
+    var req;
+    var reqOptions = {
+        method: method,
+        host: parsed.hostname,
+        path: parsed.path,
+        port: parsed.port ? parsed.port : (parsed.protocol === 'https:' ? 443 : 80),
+        headers: headers,
+        rejectUnauthorized: false,
+        agent: false
+    };
+
+    if (options.tls) {
+        Object.keys(options.tls).forEach(function (key) {
+            reqOptions[key] = options.tls[key];
+        });
+    }
+
+    try {
+        req = handler.request(reqOptions);
+    } catch (E) {
+        finished = true;
+        setImmediate(function () {
+            fetchRes.emit('error', E);
+        });
+        return fetchRes;
+    }
+
+    if (options.timeout) {
+        req.setTimeout(options.timeout, function () {
+            if (finished) {
+                return;
+            }
+            finished = true;
+            req.abort();
+            fetchRes.emit('error', new Error('Request Tiemout'));
+        });
+    }
+
+    req.on('error', function (err) {
+        if (finished) {
+            return;
+        }
+        finished = true;
+        fetchRes.emit('error', err);
+    });
+
+    req.on('response', function (res) {
+        var inflate;
+
+        if (finished) {
+            return;
+        }
+
+        switch (res.headers['content-encoding']) {
+            case 'gzip':
+            case 'deflate':
+                inflate = zlib.createUnzip();
+                break;
+        }
+
+        if (res.headers['set-cookie']) {
+            [].concat(res.headers['set-cookie'] || []).forEach(function (cookie) {
+                options.cookies.set(cookie, url);
+            });
+        }
+
+        if ([301, 302, 303, 307, 308].indexOf(res.statusCode) >= 0 && res.headers.location) {
+            // redirect
+            options.redirects++;
+            if (options.redirects > options.maxRedirects) {
+                finished = true;
+                fetchRes.emit('error', new Error('Maximum redirect count exceeded'));
+                req.abort();
+                return;
+            }
+            return fetch(urllib.resolve(url, res.headers.location), options);
+        }
+
+        if (res.statusCode >= 300) {
+            finished = true;
+            fetchRes.emit('error', new Error('Invalid status code ' + res.statusCode));
+            req.abort();
+            return;
+        }
+
+        res.on('error', function (err) {
+            if (finished) {
+                return;
+            }
+            finished = true;
+            fetchRes.emit('error', err);
+            req.abort();
+        });
+
+        if (inflate) {
+            res.pipe(inflate).pipe(fetchRes);
+            inflate.on('error', function (err) {
+                if (finished) {
+                    return;
+                }
+                finished = true;
+                fetchRes.emit('error', err);
+                req.abort();
+            });
+        } else {
+            res.pipe(fetchRes);
+        }
+    });
+
+    setImmediate(function () {
+        if (body) {
+            try {
+                if (typeof body.pipe === 'function') {
+                    return body.pipe(req);
+                } else {
+                    req.write(body);
+                }
+            } catch (err) {
+                finished = true;
+                fetchRes.emit('error', err);
+                return;
+            }
+        }
+        req.end();
+    });
+
+    return fetchRes;
+}
+
+
+/***/ }),
+/* 35 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+// module to handle cookies
+
+var urllib = __webpack_require__(5);
+
+var SESSION_TIMEOUT = 1800; // 30 min
+
+module.exports = Cookies;
+
+/**
+ * Creates a biskviit cookie jar for managing cookie values in memory
+ *
+ * @constructor
+ * @param {Object} [options] Optional options object
+ */
+function Cookies(options) {
+    this.options = options || {};
+    this.cookies = [];
+}
+
+/**
+ * Stores a cookie string to the cookie storage
+ *
+ * @param {String} cookieStr Value from the 'Set-Cookie:' header
+ * @param {String} url Current URL
+ */
+Cookies.prototype.set = function (cookieStr, url) {
+    var urlparts = urllib.parse(url || '');
+    var cookie = this.parse(cookieStr);
+    var domain;
+
+    if (cookie.domain) {
+        domain = cookie.domain.replace(/^\./, '');
+
+        // do not allow cross origin cookies
+        if (
+            // can't be valid if the requested domain is shorter than current hostname
+            urlparts.hostname.length < domain.length ||
+
+            // prefix domains with dot to be sure that partial matches are not used
+            ('.' + urlparts.hostname).substr(-domain.length + 1) !== ('.' + domain)) {
+            cookie.domain = urlparts.hostname;
+        }
+    } else {
+        cookie.domain = urlparts.hostname;
+    }
+
+    if (!cookie.path) {
+        cookie.path = this.getPath(urlparts.pathname);
+    }
+
+    // if no expire date, then use sessionTimeout value
+    if (!cookie.expires) {
+        cookie.expires = new Date(Date.now() + (Number(this.options.sessionTimeout || SESSION_TIMEOUT) || SESSION_TIMEOUT) * 1000);
+    }
+
+    return this.add(cookie);
+};
+
+/**
+ * Returns cookie string for the 'Cookie:' header.
+ *
+ * @param {String} url URL to check for
+ * @returns {String} Cookie header or empty string if no matches were found
+ */
+Cookies.prototype.get = function (url) {
+    return this.list(url).map(function (cookie) {
+        return cookie.name + '=' + cookie.value;
+    }).join('; ');
+};
+
+/**
+ * Lists all valied cookie objects for the specified URL
+ *
+ * @param {String} url URL to check for
+ * @returns {Array} An array of cookie objects
+ */
+Cookies.prototype.list = function (url) {
+    var result = [];
+    var i;
+    var cookie;
+
+    for (i = this.cookies.length - 1; i >= 0; i--) {
+        cookie = this.cookies[i];
+
+        if (this.isExpired(cookie)) {
+            this.cookies.splice(i, i);
+            continue;
+        }
+
+        if (this.match(cookie, url)) {
+            result.unshift(cookie);
+        }
+    }
+
+    return result;
+};
+
+/**
+ * Parses cookie string from the 'Set-Cookie:' header
+ *
+ * @param {String} cookieStr String from the 'Set-Cookie:' header
+ * @returns {Object} Cookie object
+ */
+Cookies.prototype.parse = function (cookieStr) {
+    var cookie = {};
+
+    (cookieStr || '').toString().split(';').forEach(function (cookiePart) {
+        var valueParts = cookiePart.split('=');
+        var key = valueParts.shift().trim().toLowerCase();
+        var value = valueParts.join('=').trim();
+        var domain;
+
+        if (!key) {
+            // skip empty parts
+            return;
+        }
+
+        switch (key) {
+
+            case 'expires':
+                value = new Date(value);
+                // ignore date if can not parse it
+                if (value.toString() !== 'Invalid Date') {
+                    cookie.expires = value;
+                }
+                break;
+
+            case 'path':
+                cookie.path = value;
+                break;
+
+            case 'domain':
+                domain = value.toLowerCase();
+                if (domain.length && domain.charAt(0) !== '.') {
+                    domain = '.' + domain; // ensure preceeding dot for user set domains
+                }
+                cookie.domain = domain;
+                break;
+
+            case 'max-age':
+                cookie.expires = new Date(Date.now() + (Number(value) || 0) * 1000);
+                break;
+
+            case 'secure':
+                cookie.secure = true;
+                break;
+
+            case 'httponly':
+                cookie.httponly = true;
+                break;
+
+            default:
+                if (!cookie.name) {
+                    cookie.name = key;
+                    cookie.value = value;
+                }
+        }
+    });
+
+    return cookie;
+};
+
+/**
+ * Checks if a cookie object is valid for a specified URL
+ *
+ * @param {Object} cookie Cookie object
+ * @param {String} url URL to check for
+ * @returns {Boolean} true if cookie is valid for specifiec URL
+ */
+Cookies.prototype.match = function (cookie, url) {
+    var urlparts = urllib.parse(url || '');
+
+    // check if hostname matches
+    // .foo.com also matches subdomains, foo.com does not
+    if (urlparts.hostname !== cookie.domain && (cookie.domain.charAt(0) !== '.' || ('.' + urlparts.hostname).substr(-cookie.domain.length) !== cookie.domain)) {
+        return false;
+    }
+
+    // check if path matches
+    var path = this.getPath(urlparts.pathname);
+    if (path.substr(0, cookie.path.length) !== cookie.path) {
+        return false;
+    }
+
+    // check secure argument
+    if (cookie.secure && urlparts.protocol !== 'https:') {
+        return false;
+    }
+
+    return true;
+};
+
+/**
+ * Adds (or updates/removes if needed) a cookie object to the cookie storage
+ *
+ * @param {Object} cookie Cookie value to be stored
+ */
+Cookies.prototype.add = function (cookie) {
+    var i;
+    var len;
+
+    // nothing to do here
+    if (!cookie || !cookie.name) {
+        return false;
+    }
+
+    // overwrite if has same params
+    for (i = 0, len = this.cookies.length; i < len; i++) {
+        if (this.compare(this.cookies[i], cookie)) {
+
+            // check if the cookie needs to be removed instead
+            if (this.isExpired(cookie)) {
+                this.cookies.splice(i, 1); // remove expired/unset cookie
+                return false;
+            }
+
+            this.cookies[i] = cookie;
+            return true;
+        }
+    }
+
+    // add as new if not already expired
+    if (!this.isExpired(cookie)) {
+        this.cookies.push(cookie);
+    }
+
+    return true;
+};
+
+/**
+ * Checks if two cookie objects are the same
+ *
+ * @param {Object} a Cookie to check against
+ * @param {Object} b Cookie to check against
+ * @returns {Boolean} True, if the cookies are the same
+ */
+Cookies.prototype.compare = function (a, b) {
+    return a.name === b.name && a.path === b.path && a.domain === b.domain && a.secure === b.secure && a.httponly === a.httponly;
+};
+
+/**
+ * Checks if a cookie is expired
+ *
+ * @param {Object} cookie Cookie object to check against
+ * @returns {Boolean} True, if the cookie is expired
+ */
+Cookies.prototype.isExpired = function (cookie) {
+    return (cookie.expires && cookie.expires < new Date()) || !cookie.value;
+};
+
+/**
+ * Returns normalized cookie path for an URL path argument
+ *
+ * @param {String} pathname
+ * @returns {String} Normalized path
+ */
+Cookies.prototype.getPath = function (pathname) {
+    var path = (pathname || '/').split('/');
+    path.pop(); // remove filename part
+    path = path.join('/').trim();
+
+    // ensure path prefix /
+    if (path.charAt(0) !== '/') {
+        path = '/' + path;
+    }
+
+    // ensure path suffix /
+    if (path.substr(-1) !== '/') {
+        path += '/';
+    }
+
+    return path;
+};
+
+
+/***/ }),
+/* 36 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var crypto = __webpack_require__(3);
+
+var flags = {
+	NTLM_NegotiateUnicode                :  0x00000001,
+	NTLM_NegotiateOEM                    :  0x00000002,
+	NTLM_RequestTarget                   :  0x00000004,
+	NTLM_Unknown9                        :  0x00000008,
+	NTLM_NegotiateSign                   :  0x00000010,
+	NTLM_NegotiateSeal                   :  0x00000020,
+	NTLM_NegotiateDatagram               :  0x00000040,
+	NTLM_NegotiateLanManagerKey          :  0x00000080,
+	NTLM_Unknown8                        :  0x00000100,
+	NTLM_NegotiateNTLM                   :  0x00000200,
+	NTLM_NegotiateNTOnly                 :  0x00000400,
+	NTLM_Anonymous                       :  0x00000800,
+	NTLM_NegotiateOemDomainSupplied      :  0x00001000,
+	NTLM_NegotiateOemWorkstationSupplied :  0x00002000,
+	NTLM_Unknown6                        :  0x00004000,
+	NTLM_NegotiateAlwaysSign             :  0x00008000,
+	NTLM_TargetTypeDomain                :  0x00010000,
+	NTLM_TargetTypeServer                :  0x00020000,
+	NTLM_TargetTypeShare                 :  0x00040000,
+	NTLM_NegotiateExtendedSecurity       :  0x00080000,
+	NTLM_NegotiateIdentify               :  0x00100000,
+	NTLM_Unknown5                        :  0x00200000,
+	NTLM_RequestNonNTSessionKey          :  0x00400000,
+	NTLM_NegotiateTargetInfo             :  0x00800000,
+	NTLM_Unknown4                        :  0x01000000,
+	NTLM_NegotiateVersion                :  0x02000000,
+	NTLM_Unknown3                        :  0x04000000,
+	NTLM_Unknown2                        :  0x08000000,
+	NTLM_Unknown1                        :  0x10000000,
+	NTLM_Negotiate128                    :  0x20000000,
+	NTLM_NegotiateKeyExchange            :  0x40000000,
+	NTLM_Negotiate56                     :  0x80000000
+};
+var typeflags = {
+	NTLM_TYPE1_FLAGS : 	  flags.NTLM_NegotiateUnicode
+						+ flags.NTLM_NegotiateOEM
+						+ flags.NTLM_RequestTarget
+						+ flags.NTLM_NegotiateNTLM
+						+ flags.NTLM_NegotiateOemDomainSupplied
+						+ flags.NTLM_NegotiateOemWorkstationSupplied
+						+ flags.NTLM_NegotiateAlwaysSign
+						+ flags.NTLM_NegotiateExtendedSecurity
+						+ flags.NTLM_NegotiateVersion
+						+ flags.NTLM_Negotiate128
+						+ flags.NTLM_Negotiate56,
+
+	NTLM_TYPE2_FLAGS :    flags.NTLM_NegotiateUnicode
+						+ flags.NTLM_RequestTarget
+						+ flags.NTLM_NegotiateNTLM
+						+ flags.NTLM_NegotiateAlwaysSign
+						+ flags.NTLM_NegotiateExtendedSecurity
+						+ flags.NTLM_NegotiateTargetInfo
+						+ flags.NTLM_NegotiateVersion
+						+ flags.NTLM_Negotiate128
+						+ flags.NTLM_Negotiate56
+};
+
+function createType1Message(options){
+	var domain = escape(options.domain.toUpperCase());
+	var workstation = escape(options.workstation.toUpperCase());
+	var protocol = 'NTLMSSP\0';
+
+	var BODY_LENGTH = 40;
+
+	var type1flags = typeflags.NTLM_TYPE1_FLAGS;
+	if(!domain || domain === '')
+		type1flags = type1flags - flags.NTLM_NegotiateOemDomainSupplied;
+
+	var pos = 0;
+	var buf = new Buffer(BODY_LENGTH + domain.length + workstation.length);
+
+
+	buf.write(protocol, pos, protocol.length); pos += protocol.length; // protocol
+	buf.writeUInt32LE(1, pos); pos += 4;          // type 1
+	buf.writeUInt32LE(type1flags, pos); pos += 4; // TYPE1 flag
+
+	buf.writeUInt16LE(domain.length, pos); pos += 2; // domain length
+	buf.writeUInt16LE(domain.length, pos); pos += 2; // domain max length
+	buf.writeUInt32LE(BODY_LENGTH + workstation.length, pos); pos += 4; // domain buffer offset
+
+	buf.writeUInt16LE(workstation.length, pos); pos += 2; // workstation length
+	buf.writeUInt16LE(workstation.length, pos); pos += 2; // workstation max length
+	buf.writeUInt32LE(BODY_LENGTH, pos); pos += 4; // workstation buffer offset
+
+	buf.writeUInt8(5, pos); pos += 1;      //ProductMajorVersion
+	buf.writeUInt8(1, pos); pos += 1;      //ProductMinorVersion
+	buf.writeUInt16LE(2600, pos); pos += 2; //ProductBuild
+
+	buf.writeUInt8(0 , pos); pos += 1; //VersionReserved1
+	buf.writeUInt8(0 , pos); pos += 1; //VersionReserved2
+	buf.writeUInt8(0 , pos); pos += 1; //VersionReserved3
+	buf.writeUInt8(15, pos); pos += 1; //NTLMRevisionCurrent
+
+	buf.write(workstation, pos, workstation.length, 'ascii'); pos += workstation.length; // workstation string
+	buf.write(domain     , pos, domain.length     , 'ascii'); pos += domain.length;
+
+	return 'NTLM ' + buf.toString('base64');
+}
+
+function parseType2Message(rawmsg, callback){
+	var match = rawmsg.match(/NTLM (.+)?/);
+	if(!match || !match[1])
+		return callback(new Error("Couldn't find NTLM in the message type2 comming from the server"));
+
+	var buf = new Buffer(match[1], 'base64');
+
+	var msg = {};
+
+	msg.signature = buf.slice(0, 8);
+	msg.type = buf.readInt16LE(8);
+
+	if(msg.type != 2)
+		return callback(new Error("Server didn't return a type 2 message"));
+
+	msg.targetNameLen = buf.readInt16LE(12);
+	msg.targetNameMaxLen = buf.readInt16LE(14);
+	msg.targetNameOffset = buf.readInt32LE(16);
+	msg.targetName  = buf.slice(msg.targetNameOffset, msg.targetNameOffset + msg.targetNameMaxLen);
+
+    msg.negotiateFlags = buf.readInt32LE(20);
+    msg.serverChallenge = buf.slice(24, 32);
+    msg.reserved = buf.slice(32, 40);
+
+    if(msg.negotiateFlags & flags.NTLM_NegotiateTargetInfo){
+    	msg.targetInfoLen = buf.readInt16LE(40);
+    	msg.targetInfoMaxLen = buf.readInt16LE(42);
+    	msg.targetInfoOffset = buf.readInt32LE(44);
+    	msg.targetInfo = buf.slice(msg.targetInfoOffset, msg.targetInfoOffset + msg.targetInfoLen);
+    }
+	return msg;
+}
+
+function createType3Message(msg2, options){
+	var nonce = msg2.serverChallenge;
+	var username = options.username;
+	var password = options.password;
+	var negotiateFlags = msg2.negotiateFlags;
+
+	var isUnicode = negotiateFlags & flags.NTLM_NegotiateUnicode;
+	var isNegotiateExtendedSecurity = negotiateFlags & flags.NTLM_NegotiateExtendedSecurity;
+
+	var BODY_LENGTH = 72;
+
+	var domainName = escape(options.domain.toUpperCase());
+	var workstation = escape(options.workstation.toUpperCase());
+
+	var workstationBytes, domainNameBytes, usernameBytes, encryptedRandomSessionKeyBytes;
+
+	var encryptedRandomSessionKey = "";
+	if(isUnicode){
+		workstationBytes = new Buffer(workstation, 'utf16le');
+		domainNameBytes = new Buffer(domainName, 'utf16le');
+		usernameBytes = new Buffer(username, 'utf16le');
+		encryptedRandomSessionKeyBytes = new Buffer(encryptedRandomSessionKey, 'utf16le');
+	}else{
+		workstationBytes = new Buffer(workstation, 'ascii');
+		domainNameBytes = new Buffer(domainName, 'ascii');
+		usernameBytes = new Buffer(username, 'ascii');
+		encryptedRandomSessionKeyBytes = new Buffer(encryptedRandomSessionKey, 'ascii');
+	}
+
+	var lmChallengeResponse = calc_resp(create_LM_hashed_password_v1(password), nonce);
+	var ntChallengeResponse = calc_resp(create_NT_hashed_password_v1(password), nonce);
+
+	if(isNegotiateExtendedSecurity){
+		var pwhash = create_NT_hashed_password_v1(password);
+	 	var clientChallenge = "";
+	 	for(var i=0; i < 8; i++){
+	 		clientChallenge += String.fromCharCode( Math.floor(Math.random()*256) );
+	   	}
+	   	var clientChallengeBytes = new Buffer(clientChallenge, 'ascii');
+	    var challenges = ntlm2sr_calc_resp(pwhash, nonce, clientChallengeBytes);
+	    lmChallengeResponse = challenges.lmChallengeResponse;
+	    ntChallengeResponse = challenges.ntChallengeResponse;
+	}
+
+	var signature = 'NTLMSSP\0';
+
+	var pos = 0;
+	var buf = new Buffer(BODY_LENGTH + domainNameBytes.length + usernameBytes.length + workstationBytes.length + lmChallengeResponse.length + ntChallengeResponse.length + encryptedRandomSessionKeyBytes.length);
+
+	buf.write(signature, pos, signature.length); pos += signature.length;
+	buf.writeUInt32LE(3, pos); pos += 4;          // type 1
+
+	buf.writeUInt16LE(lmChallengeResponse.length, pos); pos += 2; // LmChallengeResponseLen
+	buf.writeUInt16LE(lmChallengeResponse.length, pos); pos += 2; // LmChallengeResponseMaxLen
+	buf.writeUInt32LE(BODY_LENGTH + domainNameBytes.length + usernameBytes.length + workstationBytes.length, pos); pos += 4; // LmChallengeResponseOffset
+
+	buf.writeUInt16LE(ntChallengeResponse.length, pos); pos += 2; // NtChallengeResponseLen
+	buf.writeUInt16LE(ntChallengeResponse.length, pos); pos += 2; // NtChallengeResponseMaxLen
+	buf.writeUInt32LE(BODY_LENGTH + domainNameBytes.length + usernameBytes.length + workstationBytes.length + lmChallengeResponse.length, pos); pos += 4; // NtChallengeResponseOffset
+
+	buf.writeUInt16LE(domainNameBytes.length, pos); pos += 2; // DomainNameLen
+	buf.writeUInt16LE(domainNameBytes.length, pos); pos += 2; // DomainNameMaxLen
+	buf.writeUInt32LE(BODY_LENGTH, pos); pos += 4; 			  // DomainNameOffset
+
+	buf.writeUInt16LE(usernameBytes.length, pos); pos += 2; // UserNameLen
+	buf.writeUInt16LE(usernameBytes.length, pos); pos += 2; // UserNameMaxLen
+	buf.writeUInt32LE(BODY_LENGTH + domainNameBytes.length, pos); pos += 4; // UserNameOffset
+
+	buf.writeUInt16LE(workstationBytes.length, pos); pos += 2; // WorkstationLen
+	buf.writeUInt16LE(workstationBytes.length, pos); pos += 2; // WorkstationMaxLen
+	buf.writeUInt32LE(BODY_LENGTH + domainNameBytes.length + usernameBytes.length, pos); pos += 4; // WorkstationOffset
+
+	buf.writeUInt16LE(encryptedRandomSessionKeyBytes.length, pos); pos += 2; // EncryptedRandomSessionKeyLen
+	buf.writeUInt16LE(encryptedRandomSessionKeyBytes.length, pos); pos += 2; // EncryptedRandomSessionKeyMaxLen
+	buf.writeUInt32LE(BODY_LENGTH + domainNameBytes.length + usernameBytes.length + workstationBytes.length + lmChallengeResponse.length + ntChallengeResponse.length, pos); pos += 4; // EncryptedRandomSessionKeyOffset
+
+	buf.writeUInt32LE(typeflags.NTLM_TYPE2_FLAGS, pos); pos += 4; // NegotiateFlags
+
+	buf.writeUInt8(5, pos); pos++; // ProductMajorVersion
+	buf.writeUInt8(1, pos); pos++; // ProductMinorVersion
+	buf.writeUInt16LE(2600, pos); pos += 2; // ProductBuild
+	buf.writeUInt8(0, pos); pos++; // VersionReserved1
+	buf.writeUInt8(0, pos); pos++; // VersionReserved2
+	buf.writeUInt8(0, pos); pos++; // VersionReserved3
+	buf.writeUInt8(15, pos); pos++; // NTLMRevisionCurrent
+
+	domainNameBytes.copy(buf, pos); pos += domainNameBytes.length;
+	usernameBytes.copy(buf, pos); pos += usernameBytes.length;
+	workstationBytes.copy(buf, pos); pos += workstationBytes.length;
+	lmChallengeResponse.copy(buf, pos); pos += lmChallengeResponse.length;
+	ntChallengeResponse.copy(buf, pos); pos += ntChallengeResponse.length;
+	encryptedRandomSessionKeyBytes.copy(buf, pos); pos += encryptedRandomSessionKeyBytes.length;
+
+	return 'NTLM ' + buf.toString('base64');
+}
+
+function create_LM_hashed_password_v1(password){
+	// fix the password length to 14 bytes
+	password = password.toUpperCase();
+	var passwordBytes = new Buffer(password, 'ascii');
+
+	var passwordBytesPadded = new Buffer(14);
+	passwordBytesPadded.fill("\0");
+	var sourceEnd = 14;
+	if(passwordBytes.length < 14) sourceEnd = passwordBytes.length;
+	passwordBytes.copy(passwordBytesPadded, 0, 0, sourceEnd);
+
+	// split into 2 parts of 7 bytes:
+	var firstPart = passwordBytesPadded.slice(0,7);
+	var secondPart = passwordBytesPadded.slice(7);
+
+	function encrypt(buf){
+		var key = insertZerosEvery7Bits(buf);
+		var des = crypto.createCipheriv('DES-ECB', key, '');
+		return des.update("KGS!@#$%"); // page 57 in [MS-NLMP]);
+	}
+
+	var firstPartEncrypted = encrypt(firstPart);
+	var secondPartEncrypted = encrypt(secondPart);
+
+	return Buffer.concat([firstPartEncrypted, secondPartEncrypted]);
+}
+
+function insertZerosEvery7Bits(buf){
+	var binaryArray = bytes2binaryArray(buf);
+	var newBinaryArray = [];
+	for(var i=0; i<binaryArray.length; i++){
+		newBinaryArray.push(binaryArray[i]);
+
+		if((i+1)%7 === 0){
+			newBinaryArray.push(0);
+		}
+	}
+	return binaryArray2bytes(newBinaryArray);
+}
+
+function bytes2binaryArray(buf){
+	var hex2binary = {
+		0: [0,0,0,0],
+		1: [0,0,0,1],
+		2: [0,0,1,0],
+		3: [0,0,1,1],
+		4: [0,1,0,0],
+		5: [0,1,0,1],
+		6: [0,1,1,0],
+		7: [0,1,1,1],
+		8: [1,0,0,0],
+		9: [1,0,0,1],
+		A: [1,0,1,0],
+		B: [1,0,1,1],
+		C: [1,1,0,0],
+		D: [1,1,0,1],
+		E: [1,1,1,0],
+		F: [1,1,1,1]
+	};
+
+	var hexString = buf.toString('hex').toUpperCase();
+	var array = [];
+	for(var i=0; i<hexString.length; i++){
+   		var hexchar = hexString.charAt(i);
+   		array = array.concat(hex2binary[hexchar]);
+   	}
+   	return array;
+}
+
+function binaryArray2bytes(array){
+	var binary2hex = {
+		'0000': 0,
+		'0001': 1,
+		'0010': 2,
+		'0011': 3,
+		'0100': 4,
+		'0101': 5,
+		'0110': 6,
+		'0111': 7,
+		'1000': 8,
+		'1001': 9,
+		'1010': 'A',
+		'1011': 'B',
+		'1100': 'C',
+		'1101': 'D',
+		'1110': 'E',
+		'1111': 'F'
+	};
+
+ 	var bufArray = [];
+
+	for(var i=0; i<array.length; i +=8 ){
+		if((i+7) > array.length)
+			break;
+
+		var binString1 = '' + array[i] + '' + array[i+1] + '' + array[i+2] + '' + array[i+3];
+		var binString2 = '' + array[i+4] + '' + array[i+5] + '' + array[i+6] + '' + array[i+7];
+   		var hexchar1 = binary2hex[binString1];
+   		var hexchar2 = binary2hex[binString2];
+
+   		var buf = new Buffer(hexchar1 + '' + hexchar2, 'hex');
+   		bufArray.push(buf);
+   	}
+
+   	return Buffer.concat(bufArray);
+}
+
+function create_NT_hashed_password_v1(password){
+	var buf = new Buffer(password, 'utf16le');
+	var md4 = crypto.createHash('md4');
+	md4.update(buf);
+	return new Buffer(md4.digest());
+}
+
+function calc_resp(password_hash, server_challenge){
+    // padding with zeros to make the hash 21 bytes long
+    var passHashPadded = new Buffer(21);
+    passHashPadded.fill("\0");
+    password_hash.copy(passHashPadded, 0, 0, password_hash.length);
+
+    var resArray = [];
+
+    var des = crypto.createCipheriv('DES-ECB', insertZerosEvery7Bits(passHashPadded.slice(0,7)), '');
+    resArray.push( des.update(server_challenge.slice(0,8)) );
+
+    des = crypto.createCipheriv('DES-ECB', insertZerosEvery7Bits(passHashPadded.slice(7,14)), '');
+    resArray.push( des.update(server_challenge.slice(0,8)) );
+
+    des = crypto.createCipheriv('DES-ECB', insertZerosEvery7Bits(passHashPadded.slice(14,21)), '');
+    resArray.push( des.update(server_challenge.slice(0,8)) );
+
+   	return Buffer.concat(resArray);
+}
+
+function ntlm2sr_calc_resp(responseKeyNT, serverChallenge, clientChallenge){
+	// padding with zeros to make the hash 16 bytes longer
+    var lmChallengeResponse = new Buffer(clientChallenge.length + 16);
+    lmChallengeResponse.fill("\0");
+    clientChallenge.copy(lmChallengeResponse, 0, 0, clientChallenge.length);
+
+    var buf = Buffer.concat([serverChallenge, clientChallenge]);
+    var md5 = crypto.createHash('md5');
+    md5.update(buf);
+    var sess = md5.digest();
+    var ntChallengeResponse = calc_resp(responseKeyNT, sess.slice(0,8));
+
+    return {
+    	lmChallengeResponse: lmChallengeResponse,
+    	ntChallengeResponse: ntChallengeResponse
+    };
+}
+
+exports.createType1Message = createType1Message;
+exports.parseType2Message = parseType2Message;
+exports.createType3Message = createType3Message;
+
+
+
+
+
+
+/***/ }),
+/* 37 */
+/***/ (function(module, exports) {
+
+module.exports = {"name":"nodemailer-smtp-transport","version":"2.7.4","description":"SMTP transport for Nodemailer","main":"lib/smtp-transport.js","scripts":{"test":"grunt mochaTest"},"repository":{"type":"git","url":"git://github.com/andris9/nodemailer-smtp-transport.git"},"keywords":["SMTP","Nodemailer"],"author":"Andris Reinman","license":"MIT","bugs":{"url":"https://github.com/andris9/nodemailer-smtp-transport/issues"},"homepage":"http://github.com/andris9/nodemailer-smtp-transport","dependencies":{"nodemailer-shared":"1.1.0","nodemailer-wellknown":"0.1.10","smtp-connection":"2.12.0"},"devDependencies":{"chai":"^3.5.0","grunt":"^1.0.1","grunt-cli":"^1.2.0","grunt-eslint":"^19.0.0","grunt-mocha-test":"^0.12.7","mocha":"^3.0.2","smtp-server":"^1.14.2"}}
+
+/***/ }),
+/* 38 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var services = __webpack_require__(39);
+var normalized = {};
+
+Object.keys(services).forEach(function(key) {
+    var service = services[key];
+
+    normalized[normalizeKey(key)] = normalizeService(service);
+
+    [].concat(service.aliases || []).forEach(function(alias) {
+        normalized[normalizeKey(alias)] = normalizeService(service);
+    });
+
+    [].concat(service.domains || []).forEach(function(domain) {
+        normalized[normalizeKey(domain)] = normalizeService(service);
+    });
+});
+
+function normalizeKey(key) {
+    return key.replace(/[^a-zA-Z0-9.\-]/g, '').toLowerCase();
+}
+
+function normalizeService(service) {
+    var filter = ['domains', 'aliases'];
+    var response = {};
+
+    Object.keys(service).forEach(function(key) {
+        if (filter.indexOf(key) < 0) {
+            response[key] = service[key];
+        }
+    });
+
+    return response;
+}
+
+/**
+ * Resolves SMTP config for given key. Key can be a name (like 'Gmail'), alias (like 'Google Mail') or
+ * an email address (like 'test@googlemail.com').
+ *
+ * @param {String} key [description]
+ * @returns {Object} SMTP config or false if not found
+ */
+module.exports = function(key) {
+    key = normalizeKey(key.split('@').pop());
+    return normalized[key] || false;
+};
+
+/***/ }),
+/* 39 */
+/***/ (function(module, exports) {
+
+module.exports = {"126":{"host":"smtp.126.com","port":465,"secure":true},"163":{"host":"smtp.163.com","port":465,"secure":true},"1und1":{"host":"smtp.1und1.de","port":465,"secure":true,"authMethod":"LOGIN"},"AOL":{"domains":["aol.com"],"host":"smtp.aol.com","port":587},"DebugMail":{"host":"debugmail.io","port":25},"DynectEmail":{"aliases":["Dynect"],"host":"smtp.dynect.net","port":25},"FastMail":{"domains":["fastmail.fm"],"host":"mail.messagingengine.com","port":465,"secure":true},"GandiMail":{"aliases":["Gandi","Gandi Mail"],"host":"mail.gandi.net","port":587},"Gmail":{"aliases":["Google Mail"],"domains":["gmail.com","googlemail.com"],"host":"smtp.gmail.com","port":465,"secure":true},"Godaddy":{"host":"smtpout.secureserver.net","port":25},"GodaddyAsia":{"host":"smtp.asia.secureserver.net","port":25},"GodaddyEurope":{"host":"smtp.europe.secureserver.net","port":25},"hot.ee":{"host":"mail.hot.ee"},"Hotmail":{"aliases":["Outlook","Outlook.com","Hotmail.com"],"domains":["hotmail.com","outlook.com"],"host":"smtp.live.com","port":587,"tls":{"ciphers":"SSLv3"}},"iCloud":{"aliases":["Me","Mac"],"domains":["me.com","mac.com"],"host":"smtp.mail.me.com","port":587},"mail.ee":{"host":"smtp.mail.ee"},"Mail.ru":{"host":"smtp.mail.ru","port":465,"secure":true},"Maildev":{"port":1025,"ignoreTLS":true},"Mailgun":{"host":"smtp.mailgun.org","port":587},"Mailjet":{"host":"in.mailjet.com","port":587},"Mandrill":{"host":"smtp.mandrillapp.com","port":587},"Naver":{"host":"smtp.naver.com","port":587},"OpenMailBox":{"aliases":["OMB","openmailbox.org"],"host":"smtp.openmailbox.org","port":465,"secure":true},"Postmark":{"aliases":["PostmarkApp"],"host":"smtp.postmarkapp.com","port":2525},"QQ":{"domains":["qq.com"],"host":"smtp.qq.com","port":465,"secure":true},"QQex":{"aliases":["QQ Enterprise"],"domains":["exmail.qq.com"],"host":"smtp.exmail.qq.com","port":465,"secure":true},"SendCloud":{"host":"smtpcloud.sohu.com","port":25},"SendGrid":{"host":"smtp.sendgrid.net","port":587},"SES":{"host":"email-smtp.us-east-1.amazonaws.com","port":465,"secure":true},"SES-US-EAST-1":{"host":"email-smtp.us-east-1.amazonaws.com","port":465,"secure":true},"SES-US-WEST-2":{"host":"email-smtp.us-west-2.amazonaws.com","port":465,"secure":true},"SES-EU-WEST-1":{"host":"email-smtp.eu-west-1.amazonaws.com","port":465,"secure":true},"Sparkpost":{"aliases":["SparkPost","SparkPost Mail"],"domains":["sparkpost.com"],"host":"smtp.sparkpostmail.com","port":587,"secure":false},"Yahoo":{"domains":["yahoo.com"],"host":"smtp.mail.yahoo.com","port":465,"secure":true},"Yandex":{"domains":["yandex.ru"],"host":"smtp.yandex.ru","port":465,"secure":true},"Zoho":{"host":"smtp.zoho.com","port":465,"secure":true,"authMethod":"LOGIN"}}
+
+/***/ }),
+/* 40 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+const Mailer = __webpack_require__(41);
 const shared = __webpack_require__(1);
-const SMTPPool = __webpack_require__(42);
-const SMTPTransport = __webpack_require__(46);
-const SendmailTransport = __webpack_require__(47);
-const StreamTransport = __webpack_require__(49);
-const JSONTransport = __webpack_require__(50);
-const SESTransport = __webpack_require__(51);
-const fetch = __webpack_require__(6);
+const SMTPPool = __webpack_require__(53);
+const SMTPTransport = __webpack_require__(57);
+const SendmailTransport = __webpack_require__(58);
+const StreamTransport = __webpack_require__(60);
+const JSONTransport = __webpack_require__(61);
+const SESTransport = __webpack_require__(62);
+const fetch = __webpack_require__(9);
 const packageData = __webpack_require__(2);
 
 const ETHEREAL_API = 'https://api.nodemailer.com';
@@ -7422,7 +10567,7 @@ module.exports.getTestMessageUrl = function(info) {
 
 
 /***/ }),
-/* 27 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -7430,16 +10575,16 @@ module.exports.getTestMessageUrl = function(info) {
 
 const EventEmitter = __webpack_require__(4);
 const shared = __webpack_require__(1);
-const mimeTypes = __webpack_require__(13);
-const MailComposer = __webpack_require__(32);
-const DKIM = __webpack_require__(35);
-const httpProxyClient = __webpack_require__(39);
-const util = __webpack_require__(12);
+const mimeTypes = __webpack_require__(19);
+const MailComposer = __webpack_require__(43);
+const DKIM = __webpack_require__(46);
+const httpProxyClient = __webpack_require__(50);
+const util = __webpack_require__(6);
 const urllib = __webpack_require__(5);
 const packageData = __webpack_require__(2);
-const MailMessage = __webpack_require__(40);
-const net = __webpack_require__(9);
-const dns = __webpack_require__(41);
+const MailMessage = __webpack_require__(51);
+const net = __webpack_require__(7);
+const dns = __webpack_require__(52);
 const crypto = __webpack_require__(3);
 
 /**
@@ -7850,25 +10995,7 @@ module.exports = Mail;
 
 
 /***/ }),
-/* 28 */
-/***/ (function(module, exports) {
-
-module.exports = require("http");
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports) {
-
-module.exports = require("https");
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports) {
-
-module.exports = require("zlib");
-
-/***/ }),
-/* 31 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8159,7 +11286,7 @@ module.exports = Cookies;
 
 
 /***/ }),
-/* 32 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -8167,8 +11294,8 @@ module.exports = Cookies;
 
 
 
-const MimeNode = __webpack_require__(15);
-const mimeFuncs = __webpack_require__(7);
+const MimeNode = __webpack_require__(21);
+const mimeFuncs = __webpack_require__(10);
 
 /**
  * Creates the object for composing a MimeNode instance out from the mail options
@@ -8711,7 +11838,7 @@ module.exports = MailComposer;
 
 
 /***/ }),
-/* 33 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9010,7 +12137,7 @@ module.exports = addressparser;
 
 
 /***/ }),
-/* 34 */
+/* 45 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9050,7 +12177,7 @@ module.exports = LastNewline;
 
 
 /***/ }),
-/* 35 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9059,12 +12186,12 @@ module.exports = LastNewline;
 // FIXME:
 // replace this Transform mess with a method that pipes input argument to output argument
 
-const MessageParser = __webpack_require__(36);
-const RelaxedBody = __webpack_require__(37);
-const sign = __webpack_require__(38);
+const MessageParser = __webpack_require__(47);
+const RelaxedBody = __webpack_require__(48);
+const sign = __webpack_require__(49);
 const PassThrough = __webpack_require__(0).PassThrough;
 const fs = __webpack_require__(8);
-const path = __webpack_require__(14);
+const path = __webpack_require__(20);
 const crypto = __webpack_require__(3);
 
 const DKIM_ALGO = 'sha256';
@@ -9307,7 +12434,7 @@ module.exports = DKIM;
 
 
 /***/ }),
-/* 36 */
+/* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9470,7 +12597,7 @@ module.exports = MessageParser;
 
 
 /***/ }),
-/* 37 */
+/* 48 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9631,14 +12758,14 @@ module.exports = RelaxedBody;
 
 
 /***/ }),
-/* 38 */
+/* 49 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const punycode = __webpack_require__(17);
-const mimeFuncs = __webpack_require__(7);
+const punycode = __webpack_require__(22);
+const mimeFuncs = __webpack_require__(10);
 const crypto = __webpack_require__(3);
 
 /**
@@ -9755,7 +12882,7 @@ function relaxedHeaderLine(line) {
 
 
 /***/ }),
-/* 39 */
+/* 50 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -9765,8 +12892,8 @@ function relaxedHeaderLine(line) {
  * Minimal HTTP/S proxy client
  */
 
-const net = __webpack_require__(9);
-const tls = __webpack_require__(20);
+const net = __webpack_require__(7);
+const tls = __webpack_require__(11);
 const urllib = __webpack_require__(5);
 
 /**
@@ -9893,15 +13020,15 @@ module.exports = httpProxyClient;
 
 
 /***/ }),
-/* 40 */
+/* 51 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const shared = __webpack_require__(1);
-const MimeNode = __webpack_require__(15);
-const mimeFuncs = __webpack_require__(7);
+const MimeNode = __webpack_require__(21);
+const mimeFuncs = __webpack_require__(10);
 
 class MailMessage {
     constructor(mailer, data) {
@@ -10195,22 +13322,22 @@ module.exports = MailMessage;
 
 
 /***/ }),
-/* 41 */
+/* 52 */
 /***/ (function(module, exports) {
 
 module.exports = require("dns");
 
 /***/ }),
-/* 42 */
+/* 53 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const EventEmitter = __webpack_require__(4);
-const PoolResource = __webpack_require__(43);
-const SMTPConnection = __webpack_require__(10);
-const wellKnown = __webpack_require__(22);
+const PoolResource = __webpack_require__(54);
+const SMTPConnection = __webpack_require__(13);
+const wellKnown = __webpack_require__(26);
 const shared = __webpack_require__(1);
 const packageData = __webpack_require__(2);
 
@@ -10808,15 +13935,15 @@ module.exports = SMTPPool;
 
 
 /***/ }),
-/* 43 */
+/* 54 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const SMTPConnection = __webpack_require__(10);
+const SMTPConnection = __webpack_require__(13);
 const assign = __webpack_require__(1).assign;
-const XOAuth2 = __webpack_require__(21);
+const XOAuth2 = __webpack_require__(25);
 const EventEmitter = __webpack_require__(4);
 
 /**
@@ -11067,7 +14194,7 @@ module.exports = PoolResource;
 
 
 /***/ }),
-/* 44 */
+/* 55 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11182,23 +14309,23 @@ module.exports = DataStream;
 
 
 /***/ }),
-/* 45 */
+/* 56 */
 /***/ (function(module, exports) {
 
 module.exports = {"126":{"host":"smtp.126.com","port":465,"secure":true},"163":{"host":"smtp.163.com","port":465,"secure":true},"1und1":{"host":"smtp.1und1.de","port":465,"secure":true,"authMethod":"LOGIN"},"AOL":{"domains":["aol.com"],"host":"smtp.aol.com","port":587},"DebugMail":{"host":"debugmail.io","port":25},"DynectEmail":{"aliases":["Dynect"],"host":"smtp.dynect.net","port":25},"FastMail":{"domains":["fastmail.fm"],"host":"mail.messagingengine.com","port":465,"secure":true},"GandiMail":{"aliases":["Gandi","Gandi Mail"],"host":"mail.gandi.net","port":587},"Gmail":{"aliases":["Google Mail"],"domains":["gmail.com","googlemail.com"],"host":"smtp.gmail.com","port":465,"secure":true},"Godaddy":{"host":"smtpout.secureserver.net","port":25},"GodaddyAsia":{"host":"smtp.asia.secureserver.net","port":25},"GodaddyEurope":{"host":"smtp.europe.secureserver.net","port":25},"hot.ee":{"host":"mail.hot.ee"},"Hotmail":{"aliases":["Outlook","Outlook.com","Hotmail.com"],"domains":["hotmail.com","outlook.com"],"host":"smtp.live.com","port":587,"tls":{"ciphers":"SSLv3"}},"iCloud":{"aliases":["Me","Mac"],"domains":["me.com","mac.com"],"host":"smtp.mail.me.com","port":587},"mail.ee":{"host":"smtp.mail.ee"},"Mail.ru":{"host":"smtp.mail.ru","port":465,"secure":true},"Maildev":{"port":1025,"ignoreTLS":true},"Mailgun":{"host":"smtp.mailgun.org","port":587},"Mailjet":{"host":"in.mailjet.com","port":587},"Mailosaur":{"host":"mailosaur.io","port":25},"Mailtrap":{"host":"smtp.mailtrap.io","port":2525},"Mandrill":{"host":"smtp.mandrillapp.com","port":587},"Naver":{"host":"smtp.naver.com","port":587},"OpenMailBox":{"aliases":["OMB","openmailbox.org"],"host":"smtp.openmailbox.org","port":465,"secure":true},"Outlook365":{"host":"smtp.office365.com","port":587,"secure":false},"Postmark":{"aliases":["PostmarkApp"],"host":"smtp.postmarkapp.com","port":2525},"QQ":{"domains":["qq.com"],"host":"smtp.qq.com","port":465,"secure":true},"QQex":{"aliases":["QQ Enterprise"],"domains":["exmail.qq.com"],"host":"smtp.exmail.qq.com","port":465,"secure":true},"SendCloud":{"host":"smtpcloud.sohu.com","port":25},"SendGrid":{"host":"smtp.sendgrid.net","port":587},"SendinBlue":{"host":"smtp-relay.sendinblue.com","port":587},"SendPulse":{"host":"smtp-pulse.com","port":465,"secure":true},"SES":{"host":"email-smtp.us-east-1.amazonaws.com","port":465,"secure":true},"SES-US-EAST-1":{"host":"email-smtp.us-east-1.amazonaws.com","port":465,"secure":true},"SES-US-WEST-2":{"host":"email-smtp.us-west-2.amazonaws.com","port":465,"secure":true},"SES-EU-WEST-1":{"host":"email-smtp.eu-west-1.amazonaws.com","port":465,"secure":true},"Sparkpost":{"aliases":["SparkPost","SparkPost Mail"],"domains":["sparkpost.com"],"host":"smtp.sparkpostmail.com","port":587,"secure":false},"Yahoo":{"domains":["yahoo.com"],"host":"smtp.mail.yahoo.com","port":465,"secure":true},"Yandex":{"domains":["yandex.ru"],"host":"smtp.yandex.ru","port":465,"secure":true},"Zoho":{"host":"smtp.zoho.com","port":465,"secure":true,"authMethod":"LOGIN"},"qiye.aliyun":{"host":"smtp.mxhichina.com","port":"465","secure":true}}
 
 /***/ }),
-/* 46 */
+/* 57 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
 const EventEmitter = __webpack_require__(4);
-const SMTPConnection = __webpack_require__(10);
-const wellKnown = __webpack_require__(22);
+const SMTPConnection = __webpack_require__(13);
+const wellKnown = __webpack_require__(26);
 const shared = __webpack_require__(1);
-const XOAuth2 = __webpack_require__(21);
+const XOAuth2 = __webpack_require__(25);
 const packageData = __webpack_require__(2);
 
 /**
@@ -11602,16 +14729,16 @@ module.exports = SMTPTransport;
 
 
 /***/ }),
-/* 47 */
+/* 58 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-const spawn = __webpack_require__(48).spawn;
+const spawn = __webpack_require__(59).spawn;
 const packageData = __webpack_require__(2);
-const LeWindows = __webpack_require__(11);
-const LeUnix = __webpack_require__(23);
+const LeWindows = __webpack_require__(14);
+const LeUnix = __webpack_require__(27);
 const shared = __webpack_require__(1);
 
 /**
@@ -11817,13 +14944,13 @@ module.exports = SendmailTransport;
 
 
 /***/ }),
-/* 48 */
+/* 59 */
 /***/ (function(module, exports) {
 
 module.exports = require("child_process");
 
 /***/ }),
-/* 49 */
+/* 60 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -11831,8 +14958,8 @@ module.exports = require("child_process");
 
 const packageData = __webpack_require__(2);
 const shared = __webpack_require__(1);
-const LeWindows = __webpack_require__(11);
-const LeUnix = __webpack_require__(23);
+const LeWindows = __webpack_require__(14);
+const LeUnix = __webpack_require__(27);
 
 /**
  * Generates a Transport object for streaming
@@ -11972,7 +15099,7 @@ module.exports = SendmailTransport;
 
 
 /***/ }),
-/* 50 */
+/* 61 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12067,7 +15194,7 @@ module.exports = JSONTransport;
 
 
 /***/ }),
-/* 51 */
+/* 62 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -12076,7 +15203,7 @@ module.exports = JSONTransport;
 const EventEmitter = __webpack_require__(4);
 const packageData = __webpack_require__(2);
 const shared = __webpack_require__(1);
-const LeWindows = __webpack_require__(11);
+const LeWindows = __webpack_require__(14);
 
 /**
  * Generates a Transport object for Sendmail
