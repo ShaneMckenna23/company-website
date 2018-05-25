@@ -15,7 +15,7 @@ exports.handler = (event, context, callback) => {
     {
       from: process.env.GMAIL_ADDRESS,
       to: [CONTACT_ADDRESS],
-      subject: body.subject || 'Thank You',
+      subject: body.subject || 'Thank You!',
       html: body.message || saleEmail,
     },
     (err, info) => {
