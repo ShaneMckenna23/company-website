@@ -7560,10 +7560,10 @@ var mailer = nodemailer.createTransport(smtpTransport({
   }
 }));
 
-console.log(process.env.GMAIL_ADDRESS, process.env.GMAIL_PASSWORD);
-
+var login = process.env.GMAIL_ADDRESS + ' ' + process.env.GMAIL_PASSWORD;
 exports.handler = function (event, context, callback) {
   var body = querystring.parse(event.body);
+  console.log("login: ", login);
   mailer.sendMail({
     from: process.env.GMAIL_ADDRESS,
     to: [CONTACT_ADDRESS],
