@@ -111,9 +111,24 @@ class QuoteForm extends React.Component {
       body: encode({ 'form-name': 'contact', ...this.state }),
     })
       .then(() => this.successMessage())
-      .catch(error => alert(error));
+      .catch(error => this.errorMessage(error));
+
+    fetch('/.netlify/functions/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: encode({ to: this.state.email }),
+    }).catch(error => this.errorMessage(error));
 
     e.preventDefault();
+  };
+
+  successMessage = () => {
+    document.getElementById('contactForm').reset();
+    const lower = this.props.budgetMax / 2;
+    const higher = this.props.budgetMax / 2 + this.props.budgetMin;
+    this.setState({
+      budget: [lower, higher],
+    });
 
     toast.success('🚀 Quote Submission Successful', {
       position: 'top-center',
@@ -125,13 +140,17 @@ class QuoteForm extends React.Component {
     });
   };
 
-  successMessage = () => {
-    document.getElementById('contactForm').reset();
-    const lower = this.props.budgetMax / 2;
-    const higher = this.props.budgetMax / 2 + this.props.budgetMin;
-    this.setState({
-      budget: [lower, higher],
+  errorMessage = error => {
+    toast.error('Whoops something went wrong!', {
+      position: 'top-center',
+      autoClose: 5000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: false,
+      draggable: true,
     });
+
+    console.log(error);
   };
 
   render() {
