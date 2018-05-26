@@ -113,11 +113,13 @@ class QuoteForm extends React.Component {
       .then(() => this.successMessage())
       .catch(error => this.errorMessage(error));
 
+    console.log(this.state)
+
     fetch('/.netlify/functions/email', {
       method: 'POST',
-      headers: { 'Content-Type': 'x-www-form-urlencoded' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: encode({ to: this.state.email }),
-    }).catch(error => this.errorMessage(error));
+    }).catch(error => console.log(error));
 
     e.preventDefault();
   };
