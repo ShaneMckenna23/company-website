@@ -63,7 +63,7 @@ const Contact = () => (
         </h3>
       </Container>
       <CenteredContainer>
-        <a href="mailto:shanemckennadev@gmail.com">
+        <a href="mailto:info@s22.studio">
           <Button type="primary">
             <Paperplane /> E-Mail
           </Button>
