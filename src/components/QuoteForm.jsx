@@ -115,7 +115,7 @@ class QuoteForm extends React.Component {
 
     fetch('/.netlify/functions/email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'x-www-form-urlencoded' },
       body: encode({ to: this.state.email }),
     }).catch(error => this.errorMessage(error));
 
