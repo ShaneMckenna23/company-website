@@ -1,5 +1,13 @@
 import React from 'react';
+import styled from 'react-emotion';
 
-const Logo = () => <img src="/favicons/android-chrome-192x192.png" alt="s22 logo" height="64" width="64" />;
+const Icon = styled.img`
+  max-width: 64px;
+  @media (max-width: ${props => props.theme.breakpoints.s}) {
+    max-width: 32px;
+  }
+`;
+
+const Logo = () => <Icon src="/favicons/android-chrome-192x192.png" alt="s22 logo" />;
 
 export default Logo;
