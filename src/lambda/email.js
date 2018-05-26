@@ -13,6 +13,8 @@ const mailer = nodemailer.createTransport(
   })
 );
 
+console.log(process.env.GMAIL_ADDRESS, process.env.GMAIL_PASSWORD);
+
 exports.handler = (event, context, callback) => {
   const body = querystring.parse(event.body);
   mailer.sendMail(
