@@ -115,7 +115,7 @@ const Pricing = () => (
       <img src="/price3.jpg" alt="" />
       <h2>Business+</h2>
       <ul>
-        <li>Content Management</li>
+        <li>eCommerce</li>
         <li>Custom Domains</li>
         <li>1 year hosting</li>
       </ul>

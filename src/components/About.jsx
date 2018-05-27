@@ -46,7 +46,7 @@ const Wrapper = styled.section`
     }
   }
   .section-bg-lavendar {
-    background: #5d46e8;
+    background: #7159E9;
   }
   .section-bg-lavendar h3,
   .section-bg-lavendar h6,
@@ -66,7 +66,7 @@ const Wrapper = styled.section`
     height: 100%;
     content: '';
     z-index: -1;
-    background: #5d46e8;
+    background: #7159E9;
     border-radius: 100px 0 0 100px;
     transform: skew(9deg);
   }
@@ -78,7 +78,7 @@ const Wrapper = styled.section`
     height: 100%;
     content: '';
     z-index: -1;
-    background: #5d46e8;
+    background: #7159E9;
     border-radius: 0 100px 100px 0;
     transform: skew(-7deg);
   }
@@ -333,7 +333,7 @@ const Wrapper = styled.section`
   /*! 15.0 - ANIMATION CSS */
   /*! 16.0 - BLOG SECTION/PAGES */
   .section-bg-lavendar {
-    background: #5d46e8;
+    background: #7159E9;
   }
   .section-bg-lavendar h3,
   .section-bg-lavendar h6,
