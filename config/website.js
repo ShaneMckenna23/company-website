@@ -3,8 +3,8 @@ module.exports = {
   blogPostDir: 'blog',
   projectPostDir: 'project',
   // Meta Data
-  siteTitle: 'S22 - Web Agency',
-  siteTitleAlt: 'S22 - Kommunikationsdesigner & Front-End Entwickler',
+  siteTitle: 'S22 Studio',
+  siteTitleAlt: 'S22 - Web Agency',
   siteShortName: 'S22',
   siteLogo: '/social/avatar.png',
   siteBanner: '/social/banner.jpg',
