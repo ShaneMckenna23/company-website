@@ -161,7 +161,6 @@ const WhatWeDo = () => (
           <div className="col-lg-6">
             <div className="section-head-s4">
               <h2 className="section-title">What We Do</h2>
-              <p>Our mission is to take your idea and make it a reality.</p>
             </div>
           </div>
         </div>
@@ -170,7 +169,10 @@ const WhatWeDo = () => (
             <div className="text-box">
               <FA name="paint-brush" size="5x" style={{ marginBottom: '20px' }} />
               <h4>Design</h4>
-              <p>Ensure customer satisfaction</p>
+              <p>
+                Clean and responsive design. For success in any online business, a user friendly website is a must as it
+                provides a enhanced user experience to the online visitors.
+              </p>
               <br />
               <br />
             </div>
@@ -179,14 +181,20 @@ const WhatWeDo = () => (
             <div className="text-box">
               <FA name="code" size="5x" style={{ marginBottom: '20px' }} />
               <h4>Development</h4>
-              <p>SEO, Fast load times</p>
+              <p>
+                We always use the best technolgies available for your project. We build all our project with SEO in mind
+                and ensure fast load times by using advanced caching techniques which improve page speed.
+              </p>
             </div>
           </div>
           <div className="col-lg-4 ">
             <div className="text-box">
               <FA name="server" size="5x" style={{ marginBottom: '20px' }} />
               <h4>Hosting</h4>
-              <p>Https, Global CDN</p>
+              <p>
+                Our projects run on Google Cloud Platform, the same infrastuture that supports google applications. We
+                serve content via a Global Content Delivery Network and ensure all cummunication is over HTTPS.
+              </p>
             </div>
           </div>
         </div>
