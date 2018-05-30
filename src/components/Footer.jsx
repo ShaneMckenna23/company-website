@@ -90,9 +90,7 @@ const Footer = ({ children }) => {
         {children && <OptionalContent>{children}</OptionalContent>}
         <Content>
           <Important>
-            <a href="https://www.google.com/" target="_blank" rel="noopener noreferrer">
-              Google
-            </a>
+            <Link to="/contact">Contact</Link>
           </Important>
           <Item>
             <Link to="/data-protection">Data Protection</Link>
@@ -106,7 +104,7 @@ const Footer = ({ children }) => {
             </a>
           </Item>
         </Content>
-        <Copyright>{`Copyright © ${date}. S22. All rights reserved.`}</Copyright>
+        <Copyright>{`Copyright © ${date}. S22 Studio. All rights reserved.`}</Copyright>
       </Container>
     </Wrapper>
   );

@@ -59,7 +59,7 @@ const Contact = () => (
     <Wrapper>
       <Container type="article">
         <h3 style={{ textAlign: 'center' }}>
-          I'm looking forward to hearing from you - whether you have a project request, need advice or just want to chat
+          We are looking forward to hearing from you - whether you have a project request, need advice or just want to chat
         </h3>
       </Container>
       <CenteredContainer>
