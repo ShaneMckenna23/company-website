@@ -69,9 +69,7 @@ const Index = ({
     <Container>
       <Text>
         We design and build functional and beautiful websites for wonderful clients all over the globe. <br />
-        <Link to="/projects">
-          <Button type="primary">Projects</Button>
-        </Link>
+        <Button type="primary">Projects</Button>
       </Text>
     </Container>
     <Container type="big">

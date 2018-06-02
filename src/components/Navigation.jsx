@@ -42,9 +42,7 @@ const Navigation = () => (
       <Logo />
     </StyledLink>
     <Nav>
-      <Link to="/projects" activeClassName="active">
-        Projects
-      </Link>
+      <Link to="/projects" activeClassName="active" />
       <Link to="/contact" activeClassName="active">
         Contact
       </Link>

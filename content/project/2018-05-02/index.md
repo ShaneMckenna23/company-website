@@ -1,6 +1,6 @@
 ---
-customer: "TBD 1"
-title: ! "Place Holder 1"
+customer: ""
+title: ! "Adios"
 cover: "./adios.jpg"
 date: "2018-05-02"
 task: "TBD 1"

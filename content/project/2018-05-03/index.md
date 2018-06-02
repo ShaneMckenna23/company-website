@@ -1,6 +1,6 @@
 ---
-customer: ! "dublincoach.ie"
-title: "Dublin Coach Concept"
+customer: ! ""
+title: "Stellar"
 cover: "./stellar.jpg"
 date: "2018-05-05"
 task: "Concept Progressive Web Application"

@@ -78,7 +78,7 @@ const Wrapper = styled.article`
   }
 `;
 
-const StyledLink = styled(Link)`
+const StyledLink = styled.div`
   position: absolute;
   top: 0;
   left: 0;
@@ -148,7 +148,7 @@ const FeaturedProject = ({ cover, path, customer, title }) => (
     <Image>
       <Img sizes={cover} />
     </Image>
-    <StyledLink to={path}>
+    <StyledLink to="">
       <Customer>{customer}</Customer>
       <Title>{title}</Title>
     </StyledLink>
