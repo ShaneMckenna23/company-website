@@ -30,15 +30,19 @@ const TextContainer = styled.div`
     font-size: 5rem;
   }
 
-  @media (max-width: ${props => props.theme.breakpoints.m}) {
-    margin-left: 35%;
+  @media (min-width: ${props => props.theme.breakpoints.m}) {
+    margin-left: 15%;
+
+    .Typist {
+      font-size: 4rem;
+    }
   }
 
   @media (max-width: ${props => props.theme.breakpoints.s}) {
     margin-left: 20%;
 
     .Typist {
-      font-size: 2rem;
+      font-size: 3rem;
     }
   }
 `;
@@ -49,8 +53,12 @@ const Text = styled.span`
   color: white;
   font-weight: 700;
 
-  @media (max-width: ${props => props.theme.breakpoints.s}) {
-    font-size: 2.3rem;
+  @media only screen and (max-width: ${props => props.theme.breakpoints.s}) {
+    font-size: 2.8rem;
+  }
+
+  @media only screen and (min-width: ${props => props.theme.breakpoints.m}) {
+    font-size: 4.5rem;
   }
 `;
 
