@@ -23,28 +23,48 @@ const Wrapper = styled.header`
 
 const TextContainer = styled.div`
   flex: 0 0 100%;
-  margin-left: 50%;
+  margin-left: 60%;
 
   .Typist {
     color: white;
-    font-size: 2.5rem;
+    font-size: 5rem;
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.m}) {
+    margin-left: 35%;
+  }
+
+  @media (max-width: ${props => props.theme.breakpoints.s}) {
+    margin-left: 20%;
+
+    .Typist {
+      font-size: 2rem;
+    }
   }
 `;
 
 const Text = styled.span`
-  font-size: 3rem;
+  font-size: 5.5rem;
   text-shadow: ${props => props.theme.shadow.text.big};
   color: white;
-  font-weigt: 200%;
+  font-weight: 700;
+
+  @media (max-width: ${props => props.theme.breakpoints.s}) {
+    font-size: 2.3rem;
+  }
 `;
 
 const Header = ({ children, title, big }) => (
   <Wrapper>
     <TextContainer>
       <Typist>
-        <Text>The First Sentence </Text>
-        <Typist.Backspace count={8} delay={200} />
-        <Text> Phrase </Text>
+        <Text>The Award-Winning</Text>
+        <Typist.Backspace count={13} delay={500} />
+        <Text>Cretiv</Text>
+        <Typist.Backspace count={3} delay={300} />
+        <Text>ative</Text>
+        <Typist.Backspace count={8} delay={500} />
+        <Text>Innovative</Text>
       </Typist>
       <Text>Digital Agency</Text>
     </TextContainer>
