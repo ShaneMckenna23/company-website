@@ -30,7 +30,7 @@ const TextContainer = styled.div`
     font-size: 5rem;
   }
 
-  @media (min-width: ${props => props.theme.breakpoints.m}) {
+  @media (max-width: ${props => props.theme.breakpoints.m}) {
     margin-left: 15%;
 
     .Typist {
