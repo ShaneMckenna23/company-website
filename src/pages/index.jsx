@@ -4,11 +4,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Link from 'gatsby-link';
 import styled from 'react-emotion';
-import Typist from 'react-typist';
 import Footer from '../components/Footer';
 import Container from '../components/Container';
 import FeaturedProject from '../components/FeaturedProject';
-import Header from '../components/Header';
+import HeaderHome from '../components/HeaderHome';
 import Button from '../components/Button';
 import Pricing from '../components/Pricing';
 import Impact from '../components/Impact';
@@ -47,9 +46,7 @@ const Index = ({
   },
 }) => (
   <React.Fragment>
-    <Header big title={<React.Fragment>AWARD WINNING WEBSITE DEVELOPMENT</React.Fragment>}>
-      <Typist>Animate this text.</Typist>
-    </Header>
+    <HeaderHome />
     <About />
     <WhatWeDo />
     <Container type="big">
