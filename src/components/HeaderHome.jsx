@@ -39,7 +39,7 @@ const TextContainer = styled.div`
   }
 
   @media (max-width: ${props => props.theme.breakpoints.s}) {
-    margin-left: 20%;
+    margin-left: 10%;
 
     .Typist {
       font-size: 3rem;
