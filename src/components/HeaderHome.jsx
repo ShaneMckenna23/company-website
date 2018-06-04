@@ -71,7 +71,7 @@ const Header = ({ children, title, big }) => (
         <Text>Cretiv</Text>
         <Typist.Backspace count={3} delay={300} />
         <Text>ative</Text>
-        <Typist.Backspace count={9} delay={500} />
+        <Typist.Backspace count={8} delay={500} />
         <Text>Innovative</Text>
       </Typist>
       <Text>Digital Agency</Text>
