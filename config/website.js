@@ -13,7 +13,7 @@ module.exports = {
   siteDescription:
     'Hi! Ich heiße Lennart und bin sowohl autodidaktischer als auch leidenschaftlicher Kommunikationsdesigner & Front-End Entwickler. Ich entwerfe, gestalte und entwickle plattformübergreifende Design-Konzepte, um das volle Potential aus deiner Marke herauszuholen.',
   // IDs
-  googleAnalyticsID: '',
+  googleAnalyticsID: 'UA-120207083-1',
   twitter: 'lekoarts_de',
   facebook: 'lekoarts.de',
   // Manifest
