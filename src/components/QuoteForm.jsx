@@ -183,7 +183,7 @@ class QuoteForm extends React.Component {
 
           <div className="flex-container-row">
             <label htmlFor="budget">
-              Budget: €{this.state.budget[0]} - €{this.state.budget[1]}
+              Budget: ${this.state.budget[0]} - ${this.state.budget[1]}
             </label>
             <Range
               id="budget"
