@@ -86,7 +86,7 @@ const GetStartedThree = props => (
           <ul>
             <li>Content Management System</li>
             <li>Multi-Page Design</li>
-            <li>1 Year Hosting</li>
+            <li>Free Cloud Hosting</li>
             <li>Custom Domain</li>
             <li>Global CDN</li>
             <li>HTTPS connection</li>

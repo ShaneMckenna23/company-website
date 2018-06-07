@@ -81,12 +81,12 @@ const GetStartedOne = props => (
     <Container type="big">
       <Title>Quota Form</Title>
       <Wrapper>
-        <QuoteForm budgetMin={150} budgetMax={500} />
+        <QuoteForm budgetMin={65} budgetMax={500} />
         <Services>
           <h2 style={{ marginTop: '.5em' }}>Services</h2>
           <ul>
             <li>Single-Page Design</li>
-            <li>3 Months Hosting</li>
+            <li>Free Cloud Hosting</li>
             <li>Custom Domain</li>
             <li>Global CDN</li>
             <li>HTTPS connection</li>

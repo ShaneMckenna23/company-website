@@ -85,7 +85,7 @@ const GetStartedTwo = props => (
           <h2 style={{ marginTop: '.5em' }}>Services</h2>
           <ul>
             <li>Multi-Page Design</li>
-            <li>6 Months Hosting</li>
+            <li>Free Cloud Hosting</li>
             <li>Custom Domain</li>
             <li>Global CDN</li>
             <li>HTTPS connection</li>
